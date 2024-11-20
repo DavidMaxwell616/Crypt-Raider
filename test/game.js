@@ -13,7 +13,7 @@ class Example extends Phaser.Scene
     preload ()
     {
         this.load.tilemapTiledJSON('map', 'map.json');
-        this.load.image('kenney_redux_64x64', 'kenney_redux_64x64.png');
+        this.load.image('image_map', 'image_map.png');
         this.load.spritesheet('player', 'dude-cropped.png', { frameWidth: 32, frameHeight: 42 });
         this.load.image('box', 'box-item-boxed.png');
     }
@@ -21,7 +21,7 @@ class Example extends Phaser.Scene
     create ()
     {
         this.map = this.make.tilemap({ key: 'map' });
-        const tileset = this.map.addTilesetImage('kenney_redux_64x64');
+        const tileset = this.map.addTilesetImage('image_map');
         const bgLayer = this.map.createLayer('Background Layer', tileset, 0, 0);
         const groundLayer = this.map.createLayer('Ground Layer', tileset, 0, 0);
         const fgLayer = this.map.createLayer('Foreground Layer', tileset, 0, 0).setDepth(1);

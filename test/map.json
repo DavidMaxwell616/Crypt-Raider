@@ -84,11 +84,11 @@
         {
          "columns":12,
          "firstgid":1,
-         "image":"..\/tiles\/kenney_redux_64x64.png",
+         "image":"..\/tiles\/image_map.png",
          "imageheight":1024,
          "imagewidth":768,
          "margin":0,
-         "name":"kenney_redux_64x64",
+         "name":"image_map",
          "spacing":0,
          "tilecount":192,
          "tileheight":64,

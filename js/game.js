@@ -13,6 +13,11 @@ class Game extends Phaser.Scene {
     
     preload ()
     {
+        this.load.tilemapTiledJSON('map', 'map.json');
+        this.load.image('kenney_redux_64x64', 'kenney_redux_64x64.png');
+        this.load.spritesheet('player', 'dude-cropped.png', { frameWidth: 32, frameHeight: 42 });
+        this.load.image('box', 'box-item-boxed.png');
+        
         this.load.image('tiles', 'assets/tilemaps/tiles/gridtiles.png');
         this.load.tilemapTiledJSON('map', 'assets/tilemaps/maps/simple-map.json');
         this.load.image('player', 'assets/images/phaser-dude.png');
