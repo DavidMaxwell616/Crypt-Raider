@@ -7,6 +7,9 @@ var map;
 var player_intro;
 var gameStart = false;
 var title;
+var radiance;
+var radiance2;
+var start_button;
 
 class Game extends Phaser.Scene {
     constructor() {
@@ -21,6 +24,9 @@ class Game extends Phaser.Scene {
         this.load.image('title', 'assets/images/crypt raider title.png');
         this.load.spritesheet('player', 'assets/spritesheets/player.png', { frameWidth: 32, frameHeight: 42 });
         this.load.spritesheet('player_intro', 'assets/spritesheets/player_intro.png', { frameWidth: 89, frameHeight: 97 });
+        this.load.spritesheet('radiance', 'assets/spritesheets/radiance.png', { frameWidth: 443, frameHeight: 44});
+        this.load.spritesheet('radiance2', 'assets/spritesheets/radiance.png', { frameWidth: 443, frameHeight: 44});
+        this.load.image('start_button', 'assets/images/start button.png');
        // this.load.image('box', 'box-item-boxed.png');
         
         // this.load.image('tiles', 'assets/tilemaps/tiles/gridtiles.png');
@@ -37,13 +43,32 @@ class Game extends Phaser.Scene {
             //     frames: this.anims.generateFrameNumbers('player_intro', { frames: [ 0, 1, 2, 3 ] }),
             //     frameRate: 8,
             //     repeat: -1
-            // }),
+            // });
         // player_intro = this.add.sprite(this.game.config.width/2, 170,'player_intro');
         // player_intro.setScale(3);
         // player_intro.play('player_intro');
         }
-         title = this.add.sprite(this.game.config.width/2,this.game.config.height*.3,'title');
-         title.setScale(2);
+            this.anims.create({
+                key: 'radiance',
+                frames: this.anims.generateFrameNumbers('radiance'),
+                frameRate: 8,
+                repeat: -1
+            });
+        radiance = this.add.sprite(this.game.config.width/2, this.game.config.height*.2,'radiance');
+        radiance.setScale(2);
+        radiance.play('radiance');
+        radiance2 = this.add.sprite(this.game.config.width/2, this.game.config.height*.2,'radiance');
+        radiance2.setScale(2);
+        radiance2.play('radiance');
+        radiance2.angle=90;
+        title = this.add.sprite(this.game.config.width/2,this.game.config.height*.3,'title');
+        title.setScale(2);
+        start_button = this.add.sprite(this.game.config.width/2, this.game.config.height*.7, 'start_button');
+        start_button.setScale(3);
+        start_button
+        .setInteractive()
+        .on('pointerdown', () => this.startGame());    
+            
         return;
         
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
@@ -67,8 +92,17 @@ class Game extends Phaser.Scene {
         this.info = this.add.text(10, 10, 'Player');
     }
 
+    startGame () {
+        gameStart = true;
+    }
+
     update ()
     {
+        if(!gameStart){
+radiance.angle+=.5;
+radiance2.angle+=.5;
+        }       
+        
         return;
         this.player.body.setVelocityX(0);
         if (this.cursors.left.isDown)
