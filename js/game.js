@@ -6,6 +6,7 @@ var tiles;
 var map;
 var player_intro;
 var gameStart = false;
+var title;
 
 class Game extends Phaser.Scene {
     constructor() {
@@ -17,6 +18,7 @@ class Game extends Phaser.Scene {
     {
         this.load.tilemapTiledJSON('map', 'assets/maps/platformer-simple.json');
         this.load.image('wall_map', 'assets/spritesheets/wall_blocks.png');
+        this.load.image('title', 'assets/images/crypt raider title.png');
         this.load.spritesheet('player', 'assets/spritesheets/player.png', { frameWidth: 32, frameHeight: 42 });
         this.load.spritesheet('player_intro', 'assets/spritesheets/player_intro.png', { frameWidth: 89, frameHeight: 97 });
        // this.load.image('box', 'box-item-boxed.png');
@@ -30,16 +32,18 @@ class Game extends Phaser.Scene {
     {
         if(!gameStart)
         {
-            this.anims.create({
-                key: 'player_intro',
-                frames: this.anims.generateFrameNumbers('player_intro', { frames: [ 0, 1, 2, 3 ] }),
-                frameRate: 8,
-                repeat: -1
-            }),
-        player_intro = this.add.sprite(this.game.config.width/2, 170,'player_intro');
-        player_intro.setScale(3);
-        player_intro.play('player_intro');
+            // this.anims.create({
+            //     key: 'player_intro',
+            //     frames: this.anims.generateFrameNumbers('player_intro', { frames: [ 0, 1, 2, 3 ] }),
+            //     frameRate: 8,
+            //     repeat: -1
+            // }),
+        // player_intro = this.add.sprite(this.game.config.width/2, 170,'player_intro');
+        // player_intro.setScale(3);
+        // player_intro.play('player_intro');
         }
+         title = this.add.sprite(this.game.config.width/2,this.game.config.height*.3,'title');
+         title.setScale(2);
         return;
         
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
