@@ -10,7 +10,7 @@ var title;
 var radiance;
 var radiance2;
 var start_button;
-
+var wall_blocks;
 class Game extends Phaser.Scene {
     constructor() {
       super();
@@ -19,15 +19,20 @@ class Game extends Phaser.Scene {
     
     preload ()
     {
-        this.load.tilemapTiledJSON('map', 'assets/maps/platformer-simple.json');
-        this.load.image('wall_map', 'assets/spritesheets/wall_blocks.png');
-        this.load.image('title', 'assets/images/crypt raider title.png');
-        this.load.spritesheet('player', 'assets/spritesheets/player.png', { frameWidth: 32, frameHeight: 42 });
-        this.load.spritesheet('player_intro', 'assets/spritesheets/player_intro.png', { frameWidth: 89, frameHeight: 97 });
-        this.load.spritesheet('radiance', 'assets/spritesheets/radiance.png', { frameWidth: 443, frameHeight: 44});
-        this.load.spritesheet('radiance2', 'assets/spritesheets/radiance.png', { frameWidth: 443, frameHeight: 44});
-        this.load.image('start_button', 'assets/images/start button.png');
-       // this.load.image('box', 'box-item-boxed.png');
+        this.load.setPath('assets/maps');
+        this.load.tilemapTiledJSON('map', 'platformer-simple.json');
+        this.load.setPath('assets/spritesheets');
+        this.load.spritesheet('player', 'player.png', { frameWidth: 32, frameHeight: 42 });
+        this.load.spritesheet('player_intro', 'player_intro.png', { frameWidth: 89, frameHeight: 97 });
+        this.load.spritesheet('radiance', 'radiance.png', { frameWidth: 443, frameHeight: 44});
+        this.load.spritesheet('radiance2', 'radiance.png', { frameWidth: 443, frameHeight: 44});
+        this.load.setPath('assets/images');
+        this.load.image('title', 'crypt raider title.png');
+        this.load.image('start_button', 'start button.png');
+        this.load.setPath('assets/tilemaps/tiles');
+        this.load.image('wall_blocks',  'wall_blocks.png');
+        
+        // this.load.image('box', 'box-item-boxed.png');
         
         // this.load.image('tiles', 'assets/tilemaps/tiles/gridtiles.png');
         // this.load.tilemapTiledJSON('map', 'assets/tilemaps/maps/simple-map.json');
@@ -67,8 +72,12 @@ class Game extends Phaser.Scene {
         start_button.setScale(3);
         start_button
         .setInteractive()
-        .on('pointerdown', () => this.startGame());    
-            
+        .on('pointerdown', () => this.startGame());
+
+        this.map = this.make.tilemap({ key: 'map' });
+        const tileset = this.map.addTilesetImage('wall_blocks');
+        const bgLayer = this.map.createLayer('Background Layer', tileset, 0, 0);
+        const groundLayer = this.map.createLayer('Ground Layer', tileset, 0, 0);            
         return;
         
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
@@ -94,15 +103,21 @@ class Game extends Phaser.Scene {
 
     startGame () {
         gameStart = true;
+        radiance.visible = false;
+        radiance2.visible = false;
+        title.visible = false;
+        start_button.visible = false;
     }
 
     update ()
     {
         if(!gameStart){
-radiance.angle+=.5;
-radiance2.angle+=.5;
+            radiance.angle+=.5;
+            radiance2.angle+=.5;
         }       
-        
+       else
+       {
+       } 
         return;
         this.player.body.setVelocityX(0);
         if (this.cursors.left.isDown)
