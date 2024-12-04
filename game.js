@@ -99,6 +99,31 @@ function create() {
 
   // Add collision between the player and the spikes
   this.physics.add.collider(this.player, this.spikes, playerHit, null, this);
+  this.add.text(70, 10, 'LEVEL', {
+    fontFamily: 'impact',
+    fontSize: '24px',
+    color: 'yellow'
+  });
+  this.add.text(190, 10, 'SCORE', {
+    fontFamily: 'impact',
+    fontSize: '24px',
+    color: 'yellow'
+  });
+  this.add.text(330, 10, 'ENERGY', {
+    fontFamily: 'impact',
+    fontSize: '24px',
+    color: 'yellow'
+  });
+  this.add.text(550, 10, 'TIME', {
+    fontFamily: 'impact',
+    fontSize: '24px',
+    color: 'yellow'
+  });
+  this.add.text(640, 10, 'LIVES', {
+    fontFamily: 'impact',
+    fontSize: '24px',
+    color: 'yellow'
+  });
 }
 
 function update() {
