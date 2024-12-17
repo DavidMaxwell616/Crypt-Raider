@@ -48,7 +48,7 @@ class Game extends Phaser.Scene {
 
     create() {
         const map = this.make.tilemap({ key: 'map' });
-        const tileset = map.addTilesetImage('kenney_simple_platformer', 'tiles');
+        const tileset = map.addTilesetImage('tiles', 'tiles');
         const backgroundImage = this.add.image(0, 0, 'background');
         backgroundImage.setScale(1.5).setOrigin(0);
         const platforms = map.createLayer('Platforms', tileset, 0, 200);

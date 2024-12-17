@@ -1,7 +1,7 @@
 const config = {
   type: Phaser.AUTO,
   parent: 'game',
-  width: 832,
+  width: 900,
   heigth: 640,
   scale: {
     mode: Phaser.Scale.RESIZE,
@@ -18,6 +18,7 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
+const BLOCK_SIZE = 50;
 
 function preload() {
   this.load.image('background', 'assets/images/background.png');
@@ -30,10 +31,11 @@ function preload() {
 
 function create() {
   const map = this.make.tilemap({ key: 'map' });
-  const tileset = map.addTilesetImage('kenney_simple_platformer', 'tiles');
-  const backgroundImage = this.add.image(0, 0, 'background');
-  backgroundImage.setScale(1.5).setOrigin(0);
-  const platforms = map.createLayer('Platforms', tileset, 0, 200);
+  const tileset = map.addTilesetImage('blocks', 'tiles', 64, 64)
+   const backgroundImage = this.add.image(0, 0, 'background');
+  backgroundImage.width = this.game.config.width;
+  backgroundImage.setOrigin(0).setScale(1.65);
+  const platforms = map.createLayer('Platforms', tileset, 0, BLOCK_SIZE);
   // There are many ways to set collision between tiles and players
   // As we want players to collide with all of the platforms, we tell Phaser to
   // set collisions for every tile in our platform layer whose index isn't -1.
@@ -42,7 +44,7 @@ function create() {
   platforms.setCollisionByExclusion(-1, true);
 
   // Add the player to the game world
-  this.player = this.physics.add.sprite(50, 300, 'player').setScale(1.5).setOrigin(0);;
+  this.player = this.physics.add.sprite(50, 300, 'player').setScale(1.65).setOrigin(0);;
   this.player.setBounce(0.1); // our player will bounce from items
   this.player.setCollideWorldBounds(true); // don't go out of the map
   this.physics.add.collider(this.player, platforms);
