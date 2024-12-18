@@ -43,7 +43,7 @@ function create() {
   platforms.setCollisionByExclusion(-1, true);
 
   // Add the player to the game world
-  this.player = this.physics.add.sprite(50, 300, 'player').setScale(1.65).setOrigin(0);;
+  this.player = this.physics.add.sprite(13*BLOCK_SIZE, 3*BLOCK_SIZE,'player').setScale(1.65).setOrigin(0);;
   this.player.setBounce(0.1); // our player will bounce from items
   this.player.setCollideWorldBounds(true); // don't go out of the map
   this.physics.add.collider(this.player, platforms);
@@ -100,27 +100,27 @@ function create() {
 
   // Add collision between the player and the spikes
   this.physics.add.collider(this.player, this.spikes, playerHit, null, this);
-  this.add.text(70, 10, 'LEVEL', {
+  this.add.text(BLOCK_SIZE+30, 10, 'LEVEL', {
     fontFamily: 'impact',
     fontSize: '24px',
     color: 'yellow'
   });
-  this.add.text(190, 10, 'SCORE', {
+  this.add.text(BLOCK_SIZE*4+20, 10, 'SCORE', {
     fontFamily: 'impact',
     fontSize: '24px',
     color: 'yellow'
   });
-  this.add.text(330, 10, 'ENERGY', {
+  this.add.text(BLOCK_SIZE*7+20, 10, 'ENERGY', {
     fontFamily: 'impact',
     fontSize: '24px',
     color: 'yellow'
   });
-  this.add.text(550, 10, 'TIME', {
+  this.add.text(BLOCK_SIZE*12+20, 10, 'TIME', {
     fontFamily: 'impact',
     fontSize: '24px',
     color: 'yellow'
   });
-  this.add.text(640, 10, 'LIVES', {
+  this.add.text(BLOCK_SIZE*14+20, 10, 'LIVES', {
     fontFamily: 'impact',
     fontSize: '24px',
     color: 'yellow'
