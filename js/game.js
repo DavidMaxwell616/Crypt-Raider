@@ -25,14 +25,16 @@ function preload() {
   this.load.image('tiles', 'assets/tilesets/blocks.png');
   this.load.image('spike', 'assets/images/spike.png');
   this.load.tilemapTiledJSON('map', 'assets/tilemaps/level1.json');
-  this.load.spritesheet('player', 'assets/images/player.png', 
+  this.load.spritesheet('player', 'assets/spritesheets/player.png', 
     { frameWidth: 34, frameHeight: 34 });
-}
+  this.load.spritesheet('capsule', 'assets/spritesheets/capsule.png', 
+      { frameWidth: 32, frameHeight: 32 });
+  }
 
 function create() {
   const map = this.make.tilemap({ key: 'map' });
   const tileset = map.addTilesetImage('blocks', 'tiles', 64, 64)
-   const backgroundImage = this.add.image(0, 0, 'background');
+  const backgroundImage = this.add.image(0, 0, 'background');
   backgroundImage.setOrigin(0);
   const platforms = map.createLayer('Platforms', tileset, 0, BLOCK_SIZE);
   // There are many ways to set collision between tiles and players
@@ -47,6 +49,11 @@ function create() {
   this.player.setBounce(0.1); // our player will bounce from items
   this.player.setCollideWorldBounds(true); // don't go out of the map
   this.physics.add.collider(this.player, platforms);
+ 
+  this.capsule = this.physics.add.sprite(6*BLOCK_SIZE, 3*BLOCK_SIZE,'capsule').setScale(1.65).setOrigin(0);;
+  this.capsule.setBounce(0.1); // our player will bounce from items
+  this.capsule.setCollideWorldBounds(true); // don't go out of the map
+  this.physics.add.collider(this.capsule, platforms);
 
   this.anims.create({
     key: 'walk',
@@ -75,10 +82,17 @@ function create() {
     frameRate: 8,
     repeat: -1
   });
-
+  this.anims.create({
+    key: 'capsule',
+    frames: this.anims.generateFrameNumbers('capsule'),
+    frameRate: 8,
+    repeat: -1
+  });
+  this.capsule.play('capsule', true);
   // Enable user input via cursor keys
   this.cursors = this.input.keyboard.createCursorKeys();
 
+  return;
   // Create a sprite group for all spikes, set common properties to ensure that
   // sprites in the group don't move via gravity or by player collisions
   this.spikes = this.physics.add.group({
@@ -132,7 +146,6 @@ function update() {
   if (this.cursors.left.isDown) {
     this.player.setVelocityX(-200);
     this.player.setFlipX(true);
-    console.log('walk left');
     this.player.play('walk', true);
   } 
   else if (this.cursors.right.isDown) {
