@@ -33,8 +33,7 @@ function create() {
   const map = this.make.tilemap({ key: 'map' });
   const tileset = map.addTilesetImage('blocks', 'tiles', 64, 64)
    const backgroundImage = this.add.image(0, 0, 'background');
-  backgroundImage.width = this.game.config.width;
-  backgroundImage.setOrigin(0).setScale(1.65);
+  backgroundImage.setOrigin(0);
   const platforms = map.createLayer('Platforms', tileset, 0, BLOCK_SIZE);
   // There are many ways to set collision between tiles and players
   // As we want players to collide with all of the platforms, we tell Phaser to
