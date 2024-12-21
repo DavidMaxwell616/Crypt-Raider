@@ -50,10 +50,11 @@ function create() {
   this.player.setCollideWorldBounds(true); // don't go out of the map
   this.physics.add.collider(this.player, platforms);
  
-  this.capsule = this.physics.add.sprite(6*BLOCK_SIZE, 3*BLOCK_SIZE,'capsule').setScale(1.6).setOrigin(0);;
+  this.capsule = this.physics.add.sprite(6*BLOCK_SIZE, 3*BLOCK_SIZE,'capsule').setScale(1.25).setOrigin(0);;
 //  this.capsule.setBounce(0.1); // our player will bounce from items
   this.capsule.setCollideWorldBounds(true); // don't go out of the map
-  this.capsule.setGravityY(500);
+  this.capsule.setGravityY(1500);
+  this.capsule.setBounce(.2);
    this.physics.add.collider(this.capsule, platforms);
   this.physics.add.collider(this.capsule, this.player);
 
