@@ -10,7 +10,7 @@ var title;
 var radiance;
 var radiance2;
 var start_button;
-var wall_blocks;
+var blocks;
 class Game extends Phaser.Scene {
     constructor() {
       super();
@@ -30,7 +30,7 @@ class Game extends Phaser.Scene {
         this.load.image('title', 'crypt raider title.png');
         this.load.image('start_button', 'start button.png');
         this.load.setPath('assets/tilemaps/tiles');
-        this.load.image('wall_blocks',  'wall_blocks.png');
+        this.load.image('blocks',  'blocks.png');
         
         this.load.image('background', 'assets/images/background.png');
         this.load.image('tiles', 'assets/tilesets/blocks.png');

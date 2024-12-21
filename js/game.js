@@ -26,7 +26,7 @@ function preload() {
   this.load.image('spike', 'assets/images/spike.png');
   this.load.tilemapTiledJSON('map', 'assets/tilemaps/level1.json');
   this.load.spritesheet('player', 'assets/spritesheets/player.png', 
-    { frameWidth: 34, frameHeight: 34 });
+    { frameWidth: 32, frameHeight: 32 });
   this.load.spritesheet('capsule', 'assets/spritesheets/capsule.png', 
       { frameWidth: 32, frameHeight: 32 });
   }
@@ -45,15 +45,17 @@ function create() {
   platforms.setCollisionByExclusion(-1, true);
 
   // Add the player to the game world
-  this.player = this.physics.add.sprite(13*BLOCK_SIZE, 3*BLOCK_SIZE,'player').setScale(1.65).setOrigin(0);;
+  this.player = this.physics.add.sprite(13*BLOCK_SIZE, 3*BLOCK_SIZE,'player').setScale(1.6).setOrigin(0);;
   this.player.setBounce(0.1); // our player will bounce from items
   this.player.setCollideWorldBounds(true); // don't go out of the map
   this.physics.add.collider(this.player, platforms);
  
-  this.capsule = this.physics.add.sprite(6*BLOCK_SIZE, 3*BLOCK_SIZE,'capsule').setScale(1.65).setOrigin(0);;
-  this.capsule.setBounce(0.1); // our player will bounce from items
+  this.capsule = this.physics.add.sprite(6*BLOCK_SIZE, 3*BLOCK_SIZE,'capsule').setScale(1.6).setOrigin(0);;
+//  this.capsule.setBounce(0.1); // our player will bounce from items
   this.capsule.setCollideWorldBounds(true); // don't go out of the map
-  this.physics.add.collider(this.capsule, platforms);
+  this.capsule.setGravityY(500);
+   this.physics.add.collider(this.capsule, platforms);
+  this.physics.add.collider(this.capsule, this.player);
 
   this.anims.create({
     key: 'walk',
