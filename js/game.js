@@ -1,3 +1,13 @@
+var level = 1;
+var score = 0;
+const Game_State = {
+  INTRO: 0,
+  LEVEL_INTRO: 1,
+  LEVEL: 2,
+  GAME_OVER: 3
+};
+var game_state = Game_State.INTRO;
+
 const config = {
   type: Phaser.AUTO,
   parent: 'game',
@@ -24,9 +34,10 @@ function preload() {
   this.load.image('background', 'assets/images/background.png');
   this.load.image('tiles', 'assets/tilesets/blocks.png');
   this.load.image('spike', 'assets/images/spike.png');
+  this.load.image('portal', 'assets/images/portal.png');
   this.load.tilemapTiledJSON('map', 'assets/tilemaps/level1.json');
   this.load.spritesheet('player', 'assets/spritesheets/player.png', 
-    { frameWidth: 32, frameHeight: 32 });
+    { frameWidth: 34, frameHeight: 34 });
   this.load.spritesheet('capsule', 'assets/spritesheets/capsule.png', 
       { frameWidth: 32, frameHeight: 32 });
   }
@@ -51,13 +62,14 @@ function create() {
   this.physics.add.collider(this.player, platforms);
  
   this.capsule = this.physics.add.sprite(6*BLOCK_SIZE, 3*BLOCK_SIZE,'capsule').setScale(1.25).setOrigin(0);;
-//  this.capsule.setBounce(0.1); // our player will bounce from items
   this.capsule.setCollideWorldBounds(true); // don't go out of the map
   this.capsule.setGravityY(1500);
   this.capsule.setBounce(.2);
    this.physics.add.collider(this.capsule, platforms);
   this.physics.add.collider(this.capsule, this.player);
-
+  this.portal = this.physics.add.sprite(9*BLOCK_SIZE, 12*BLOCK_SIZE,'portal').setScale(1.75).setOrigin(0);;
+  this.physics.add.collider(this.capsule, this.portal, levelUp, null, this);
+ 
   this.anims.create({
     key: 'walk',
     frames: this.anims.generateFrameNumbers('player', { frames: [ 4, 5, 6 ] }),
@@ -95,34 +107,34 @@ function create() {
   // Enable user input via cursor keys
   this.cursors = this.input.keyboard.createCursorKeys();
 
-  return;
   // Create a sprite group for all spikes, set common properties to ensure that
   // sprites in the group don't move via gravity or by player collisions
-  this.spikes = this.physics.add.group({
-    allowGravity: false,
-    immovable: true
-  });
+  // this.spikes = this.physics.add.group({
+  //   allowGravity: false,
+  //   immovable: true
+  // });
 
-  // Get the spikes from the object layer of our Tiled map. Phaser has a
-  // createFromObjects function to do so, but it creates sprites automatically
-  // for us. We want to manipulate the sprites a bit before we use them
-  map.getObjectLayer('Spikes').objects.forEach((spike) => {
-    // Add new spikes to our sprite group
-    const spikeSprite = this.spikes.create(spike.x, spike.y + 200 - spike.height, 'spike').setOrigin(0);
-    // By default the sprite has loads of whitespace from the base image, we
-    // resize the sprite to reduce the amount of whitespace used by the sprite
-    // so collisions can be more precise
-    spikeSprite.body.setSize(spike.width, spike.height - 20).setOffset(0, 20);
-  });
+  // // Get the spikes from the object layer of our Tiled map. Phaser has a
+  // // createFromObjects function to do so, but it creates sprites automatically
+  // // for us. We want to manipulate the sprites a bit before we use them
+  // map.getObjectLayer('Spikes').objects.forEach((spike) => {
+  //   // Add new spikes to our sprite group
+  //   const spikeSprite = this.spikes.create(spike.x, spike.y + 200 - spike.height, 'spike').setOrigin(0);
+  //   // By default the sprite has loads of whitespace from the base image, we
+  //   // resize the sprite to reduce the amount of whitespace used by the sprite
+  //   // so collisions can be more precise
+  //   spikeSprite.body.setSize(spike.width, spike.height - 20).setOffset(0, 20);
+  // });
 
-  // Add collision between the player and the spikes
-  this.physics.add.collider(this.player, this.spikes, playerHit, null, this);
-  this.add.text(BLOCK_SIZE+30, 10, 'LEVEL', {
+  // // Add collision between the player and the spikes
+  // this.physics.add.collider(this.player, this.spikes, playerHit, null, this);
+
+  this.add.text(BLOCK_SIZE+30, 10, 'LEVEL: '+level, {
     fontFamily: 'impact',
     fontSize: '24px',
     color: 'yellow'
   });
-  this.add.text(BLOCK_SIZE*4+20, 10, 'SCORE', {
+  this.add.text(BLOCK_SIZE*4+20, 10, 'SCORE: '+score, {
     fontFamily: 'impact',
     fontSize: '24px',
     color: 'yellow'
@@ -195,4 +207,9 @@ function playerHit(player, spike) {
     ease: 'Linear',
     repeat: 5,
   });
+}
+
+function levelUp(){
+  this.capsule.visible = false;
+  console.log('level up!!!');
 }
