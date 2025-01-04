@@ -1,13 +1,3 @@
-var level = 1;
-var score = 0;
-const Game_State = {
-  INTRO: 0,
-  LEVEL_INTRO: 1,
-  LEVEL: 2,
-  GAME_OVER: 3
-};
-var game_state = Game_State.INTRO;
-
 const config = {
   type: Phaser.AUTO,
   parent: 'game',
@@ -26,21 +16,10 @@ const config = {
     default: 'arcade',
   }
 };
+var game_state = Game_State.INTRO;
 
 const game = new Phaser.Game(config);
-const BLOCK_SIZE = 50;
 
-function preload() {
-  this.load.image('background', 'assets/images/background.png');
-  this.load.image('tiles', 'assets/tilesets/blocks.png');
-  this.load.image('spike', 'assets/images/spike.png');
-  this.load.image('portal', 'assets/images/portal.png');
-  this.load.tilemapTiledJSON('map', 'assets/tilemaps/levels.json');
-  this.load.spritesheet('player', 'assets/spritesheets/player.png', 
-    { frameWidth: 34, frameHeight: 34 });
-  this.load.spritesheet('capsule', 'assets/spritesheets/capsule.png', 
-      { frameWidth: 32, frameHeight: 32 });
-  }
 
 function create() {
   const map = this.make.tilemap({ key: 'map' });
@@ -48,6 +27,7 @@ function create() {
   const backgroundImage = this.add.image(0, 0, 'background');
   backgroundImage.setOrigin(0);
   const platforms = map.createLayer('Platforms', tileset, 0, BLOCK_SIZE);
+  var level = platforms.tilemap.layers[0];
   // There are many ways to set collision between tiles and players
   // As we want players to collide with all of the platforms, we tell Phaser to
   // set collisions for every tile in our platform layer whose index isn't -1.
@@ -65,7 +45,7 @@ function create() {
   this.capsule.setCollideWorldBounds(true); // don't go out of the map
   this.capsule.setGravityY(1500);
   this.capsule.setBounce(.2);
-   this.physics.add.collider(this.capsule, platforms);
+  this.physics.add.collider(this.capsule, platforms);
   this.physics.add.collider(this.capsule, this.player);
   this.portal = this.physics.add.sprite(9*BLOCK_SIZE, 12*BLOCK_SIZE,'portal').setScale(1.75).setOrigin(0);;
   this.physics.add.collider(this.capsule, this.portal, levelUp, null, this);
@@ -160,20 +140,24 @@ function update() {
   // Control the player with left or right keys
   if (this.cursors.left.isDown) {
     this.player.setVelocityX(-200);
+    this.player.setVelocityY(0);
     this.player.setFlipX(true);
     this.player.play('walk', true);
   } 
   else if (this.cursors.right.isDown) {
     this.player.setVelocityX(200);
+    this.player.setVelocityY(0);
     this.player.setFlipX(false);
     this.player.play('walk', true);
   }
   else if (this.cursors.up.isDown) {
     this.player.setVelocityY(-200);
+    this.player.setVelocityX(0);
     this.player.play('walk_up', true);
   } 
   else if (this.cursors.down.isDown) {
     this.player.setVelocityY(200);
+    this.player.setVelocityX(0);
     this.player.play('walk_down', true);
   } 
   else {
