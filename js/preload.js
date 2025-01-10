@@ -1,5 +1,6 @@
 function preload() {
     this.load.image('splash', 'assets/images/crypt raider title.png');
+    this.load.image('glow', 'assets/images/glow.png');
     this.load.image('background', 'assets/images/background.png');
     this.load.image('tiles', 'assets/tilesets/blocks.png');
     this.load.image('spike', 'assets/images/spike.png');

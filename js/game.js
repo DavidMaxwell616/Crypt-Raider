@@ -28,7 +28,10 @@ function startLevel(scene)
   switch (game_state) {
     case Game_State.INTRO:
       scene.cursors = scene.input.keyboard.createCursorKeys();
-      splash = scene.add.image(config.width/2, config.height/2, 'splash').setOrigin(0.5).setScale(2.5);
+      glow1 = scene.add.image(config.width/2, config.height/4, 'glow').setOrigin(0.5);
+      glow2 = scene.add.image(config.width/2, config.height/4, 'glow').setOrigin(0.5).setAngle(90);
+      splash = scene.add.image(config.width/2, config.height/2.7, 'splash').setOrigin(0.5).setScale(2.5);
+      splash.visible = false;
       break;
   case Game_State.LEVEL:
     const map = scene.make.tilemap({ key: 'map' });
@@ -150,35 +153,54 @@ function startLevel(scene)
 }
 
 function update() {
-  if(!game_state==Game_State.INTRO)
-  // Control the player with left or right keys
-  if (this.cursors.left.isDown) {
-    this.player.setVelocityX(-200);
-    this.player.setVelocityY(0);
-    this.player.setFlipX(true);
-    this.player.play('walk', true);
-  } 
-  else if (this.cursors.right.isDown) {
-    this.player.setVelocityX(200);
-    this.player.setVelocityY(0);
-    this.player.setFlipX(false);
-    this.player.play('walk', true);
+  switch (game_state) {
+    case Game_State.INTRO:
+    if(glow1.scale<1 || glow1.scale>2.5)
+    {
+      glow1_grow*=.1;
+    }
+    if(glow2.scale<1 || glow2.scale>2.5)
+      {
+        glow2_grow*=.1;
+      }
+    glow1.scale += glow1_grow;
+    glow2.scale += glow2_grow;
+    glow1.angle++;
+    glow2.angle++; 
+      break;
+    case Game_State.LEVEL:
+    // Control the player with left or right keys
+    if (this.cursors.left.isDown) {
+      this.player.setVelocityX(-200);
+      this.player.setVelocityY(0);
+      this.player.setFlipX(true);
+      this.player.play('walk', true);
+    } 
+    else if (this.cursors.right.isDown) {
+      this.player.setVelocityX(200);
+      this.player.setVelocityY(0);
+      this.player.setFlipX(false);
+      this.player.play('walk', true);
+    }
+    else if (this.cursors.up.isDown) {
+      this.player.setVelocityY(-200);
+      this.player.setVelocityX(0);
+      this.player.play('walk_up', true);
+    } 
+    else if (this.cursors.down.isDown) {
+      this.player.setVelocityY(200);
+      this.player.setVelocityX(0);
+      this.player.play('walk_down', true);
+    } 
+    else {
+      this.player.setVelocityX(0);
+      this.player.setVelocityY(0);
+      this.player.play('idle', true);
+    };
+    
+    default:
+      break;
   }
-  else if (this.cursors.up.isDown) {
-    this.player.setVelocityY(-200);
-    this.player.setVelocityX(0);
-    this.player.play('walk_up', true);
-  } 
-  else if (this.cursors.down.isDown) {
-    this.player.setVelocityY(200);
-    this.player.setVelocityX(0);
-    this.player.play('walk_down', true);
-  } 
-  else {
-    this.player.setVelocityX(0);
-    this.player.setVelocityY(0);
-    this.player.play('idle', true);
-  };
 }
 
 /**

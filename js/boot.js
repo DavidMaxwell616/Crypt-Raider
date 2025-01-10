@@ -8,3 +8,9 @@ const Game_State = {
 };
 const BLOCK_SIZE = 50;
 var splash;
+var glow1;
+var glow2;
+var glow1_scale=2.5;
+var glow2_scale=2.5;
+var glow1_grow = -.25;
+var glow2_grow = -.25;
