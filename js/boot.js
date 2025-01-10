@@ -7,3 +7,4 @@ const Game_State = {
   GAME_OVER: 3
 };
 const BLOCK_SIZE = 50;
+var splash;
