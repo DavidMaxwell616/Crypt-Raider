@@ -3,6 +3,7 @@ function preload() {
     this.load.image('glow', 'assets/images/glow.png');
     this.load.image('background', 'assets/images/background.png');
     this.load.image('tiles', 'assets/tilesets/blocks.png');
+    this.load.image('start button', 'assets/images/start button.png');
     this.load.image('spike', 'assets/images/spike.png');
     this.load.image('portal', 'assets/images/portal.png');
    // this.load.tilemapTiledJSON('map', 'assets/tilemaps/maps/maps.json');

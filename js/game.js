@@ -31,15 +31,44 @@ function startLevel(scene)
       glow1 = scene.add.image(config.width/2, config.height/4, 'glow').setOrigin(0.5);
       glow2 = scene.add.image(config.width/2, config.height/4, 'glow').setOrigin(0.5).setAngle(90);
       splash = scene.add.image(config.width/2, config.height/2.7, 'splash').setOrigin(0.5).setScale(2.5);
-      splash.visible = false;
-      break;
-  case Game_State.LEVEL:
-    const map = scene.make.tilemap({ key: 'map' });
-    const tileset = map.addTilesetImage('blocks', 'tiles', 64, 64)
-    const backgroundImage = scene.add.image(0, 0, 'background');
-    backgroundImage.setOrigin(0);
+      start_button = scene.add.image(config.width/2, config.height*.8, 'start button').setOrigin(0.5).setScale(2.5);
+      start_button
+      .setInteractive()
+      .on('pointerdown', () => bumpLevel(scene) );      break;
+    case Game_State.LEVEL_INTRO:
+      const backgroundImage = scene.add.image(0, 0, 'background');
+      backgroundImage.setOrigin(0);
+      scene.add.text(BLOCK_SIZE+30, 10, 'LEVEL: '+level, {
+        fontFamily: 'impact',
+        fontSize: '24px',
+        color: 'yellow'
+      });
+      scene.add.text(BLOCK_SIZE*4+20, 10, 'SCORE: '+score, {
+        fontFamily: 'impact',
+        fontSize: '24px',
+        color: 'yellow'
+      });
+      scene.add.text(BLOCK_SIZE*7+20, 10, 'ENERGY', {
+        fontFamily: 'impact',
+        fontSize: '24px',
+        color: 'yellow'
+      });
+      scene.add.text(BLOCK_SIZE*12+20, 10, 'TIME', {
+        fontFamily: 'impact',
+        fontSize: '24px',
+        color: 'yellow'
+      });
+      scene.add.text(BLOCK_SIZE*14+20, 10, 'LIVES', {
+        fontFamily: 'impact',
+        fontSize: '24px',
+        color: 'yellow'
+      });
+      const map = scene.make.tilemap({ key: 'map' });
+      const tileset = map.addTilesetImage('blocks', 'tiles', 64, 64)
+    break;
+    case Game_State.LEVEL:
     const platforms = map.createLayer('Platforms', tileset, 0, BLOCK_SIZE);
-    var level = platforms.tilemap.layers[0];
+    //var level = platforms.tilemap.layers[0];
     // There are many ways to set collision between tiles and players
     // As we want players to collide with all of the platforms, we tell Phaser to
     // set collisions for every tile in our platform layer whose index isn't -1.
@@ -121,48 +150,36 @@ function startLevel(scene)
     // // Add collision between the player and the spikes
     // scene.physics.add.collider(scene.player, scene.spikes, playerHit, null, scene);
   
-    scene.add.text(BLOCK_SIZE+30, 10, 'LEVEL: '+level, {
-      fontFamily: 'impact',
-      fontSize: '24px',
-      color: 'yellow'
-    });
-    scene.add.text(BLOCK_SIZE*4+20, 10, 'SCORE: '+score, {
-      fontFamily: 'impact',
-      fontSize: '24px',
-      color: 'yellow'
-    });
-    scene.add.text(BLOCK_SIZE*7+20, 10, 'ENERGY', {
-      fontFamily: 'impact',
-      fontSize: '24px',
-      color: 'yellow'
-    });
-    scene.add.text(BLOCK_SIZE*12+20, 10, 'TIME', {
-      fontFamily: 'impact',
-      fontSize: '24px',
-      color: 'yellow'
-    });
-    scene.add.text(BLOCK_SIZE*14+20, 10, 'LIVES', {
-      fontFamily: 'impact',
-      fontSize: '24px',
-      color: 'yellow'
-    });
+    
   
     default:
       break;
   }
 }
-
+function bumpLevel(scene)
+{
+switch (game_state) {
+  case Game_State.INTRO:
+    game_state = Game_State.LEVEL_INTRO; 
+    glow1.visible = glow2.visible = 
+    splash.visible = start_button.visible = false; 
+    startLevel(scene);
+    break;
+  default:
+    break;
+}
+}
 function update() {
   switch (game_state) {
     case Game_State.INTRO:
-    if(glow1.scale<1 || glow1.scale>2.5)
-    {
-      glow1_grow*=.1;
-    }
-    if(glow2.scale<1 || glow2.scale>2.5)
+      if(glow1.scale<0 || glow1.scale>3)
       {
-        glow2_grow*=.1;
+        glow1_grow*=-1;
       }
+      if(glow2.scale<0 || glow2.scale>3)
+        {
+          glow2_grow*=-1;
+        }
     glow1.scale += glow1_grow;
     glow2.scale += glow2_grow;
     glow1.angle++;
