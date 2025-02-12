@@ -2,7 +2,7 @@ const config = {
   type: Phaser.AUTO,
   parent: 'game',
   width: 900,
-  height: 640,
+  height: 600,
   scale: {
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH
@@ -36,8 +36,7 @@ function startLevel(scene)
       .setInteractive()
       .on('pointerdown', () => bumpLevel(scene) );      break;
     case Game_State.LEVEL_INTRO:
-      const backgroundImage = scene.add.image(0, 0, 'background');
-      backgroundImage.setOrigin(0);
+      backgroundImage = scene.add.image(0, 0, 'background').setOrigin(0);
       scene.add.text(BLOCK_SIZE+30, 10, 'LEVEL: '+level, {
         fontFamily: 'impact',
         fontSize: '24px',
@@ -63,11 +62,41 @@ function startLevel(scene)
         fontSize: '24px',
         color: 'yellow'
       });
-      const map = scene.make.tilemap({ key: 'map' });
-      const tileset = map.addTilesetImage('blocks', 'tiles', 64, 64)
-    break;
+      var map = scene.make.tilemap({ key: 'map'});
+       // When loading from an array, make sure to specify the tileWidth and tileHeight
+      //const map = scene.make.tilemap({ data: map, tileWidth: 32, tileHeight:32 });
+      var tileset = map.addTilesetImage('blocks', 'tiles');
+      const layer = map.createLayer('level1', tileset, 0,BLOCK_SIZE);     
+     console.log(layer);
+      // get_ready = scene.add.image(config.width/2, config.height/1.5, 'level intro').setOrigin(0.5).setScale(1.5);;
+     
+      // scene.add.text(config.width*.4,  BLOCK_SIZE*5.5, 'LEVEL: '+level, {
+      //   fontFamily: 'courier new',
+      //   fontSize: '36px',
+      //   fontWeight: 'bold',
+      //   color: 'white'
+      // });
+     
+      // scene.start_button2 = scene.add.sprite(config.width/2.5, config.height*.8, 'capsule').setOrigin(0.5).setScale(2.5);
+      // scene.start_button2
+      // .setInteractive()
+      // .on('pointerdown', () => bumpLevel(scene) );      
+      // scene.anims.create({
+      //   key: 'capsule',
+      //   frames: scene.anims.generateFrameNumbers('capsule'),
+      //   frameRate: 8,
+      //   repeat: -1
+      // });
+      //   scene.add.text(config.width/2, BLOCK_SIZE*9, 'START', {
+      //   fontFamily: 'courier new',
+      //   fontSize: '36px',
+      //   fontWeight: 'bold',
+      //   color: 'white'
+      // });     
+     // scene.start_button2.play('capsule', true);
+      break;
+
     case Game_State.LEVEL:
-    const platforms = map.createLayer('Platforms', tileset, 0, BLOCK_SIZE);
     //var level = platforms.tilemap.layers[0];
     // There are many ways to set collision between tiles and players
     // As we want players to collide with all of the platforms, we tell Phaser to
@@ -115,12 +144,6 @@ function startLevel(scene)
     scene.anims.create({
       key: 'walk_up',
       frames: scene.anims.generateFrameNumbers('player', { frames: [ 8, 9, 10 ] }),
-      frameRate: 8,
-      repeat: -1
-    });
-    scene.anims.create({
-      key: 'capsule',
-      frames: scene.anims.generateFrameNumbers('capsule'),
       frameRate: 8,
       repeat: -1
     });

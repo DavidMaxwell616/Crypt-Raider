@@ -1,5 +1,3 @@
-var level = 1;
-var score = 0;
 const Game_State = {
   INTRO: 0,
   LEVEL_INTRO: 1,
@@ -10,9 +8,13 @@ const BLOCK_SIZE = 50;
 var splash;
 var glow1;
 var glow2;
-var glow1_scale=2.5;
-var glow2_scale=2.5;
+var glow1_scale = 2.5;
+var glow2_scale = 2.5;
 var glow1_grow = .05;
 var glow2_grow = .01;
 var start_button;
+var start_button2;
 var level = 1;
+var get_ready;
+var backgroundImage;
+var score = 0;
