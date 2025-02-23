@@ -70,13 +70,18 @@ function startLevel(scene)
      console.log(layer);
        get_ready = scene.add.image(config.width/2, config.height/1.5, 'level intro').setOrigin(0.5).setScale(1.5);;
      
-      scene.add.text(config.width*.4,  BLOCK_SIZE*5.5, 'LEVEL: '+level, {
+      scene.add.text(config.width*.3,  BLOCK_SIZE*7.3, 'LEVEL: '+level, {
         fontFamily: 'courier new',
-        fontSize: '36px',
+        fontSize: '24px',
         fontWeight: 'bold',
         color: 'white'
       });
-     
+      scene.add.text(config.width*.3,  BLOCK_SIZE*8.3, 'LEVEL CODE: '+Level_Codes[0], {
+        fontFamily: 'courier new',
+        fontSize: '24px',
+        fontWeight: 'bold',
+        color: 'white'
+      });
       scene.start_button2 = scene.add.sprite(config.width/2.5, config.height*.8, 'capsule').setOrigin(0.5).setScale(2.5);
       scene.start_button2
       .setInteractive()
