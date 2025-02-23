@@ -68,32 +68,32 @@ function startLevel(scene)
       var tileset = map.addTilesetImage('blocks', 'tiles');
       const layer = map.createLayer('level1', tileset, 0,BLOCK_SIZE);     
      console.log(layer);
-      // get_ready = scene.add.image(config.width/2, config.height/1.5, 'level intro').setOrigin(0.5).setScale(1.5);;
+       get_ready = scene.add.image(config.width/2, config.height/1.5, 'level intro').setOrigin(0.5).setScale(1.5);;
      
-      // scene.add.text(config.width*.4,  BLOCK_SIZE*5.5, 'LEVEL: '+level, {
-      //   fontFamily: 'courier new',
-      //   fontSize: '36px',
-      //   fontWeight: 'bold',
-      //   color: 'white'
-      // });
+      scene.add.text(config.width*.4,  BLOCK_SIZE*5.5, 'LEVEL: '+level, {
+        fontFamily: 'courier new',
+        fontSize: '36px',
+        fontWeight: 'bold',
+        color: 'white'
+      });
      
-      // scene.start_button2 = scene.add.sprite(config.width/2.5, config.height*.8, 'capsule').setOrigin(0.5).setScale(2.5);
-      // scene.start_button2
-      // .setInteractive()
-      // .on('pointerdown', () => bumpLevel(scene) );      
-      // scene.anims.create({
-      //   key: 'capsule',
-      //   frames: scene.anims.generateFrameNumbers('capsule'),
-      //   frameRate: 8,
-      //   repeat: -1
-      // });
-      //   scene.add.text(config.width/2, BLOCK_SIZE*9, 'START', {
-      //   fontFamily: 'courier new',
-      //   fontSize: '36px',
-      //   fontWeight: 'bold',
-      //   color: 'white'
-      // });     
-     // scene.start_button2.play('capsule', true);
+      scene.start_button2 = scene.add.sprite(config.width/2.5, config.height*.8, 'capsule').setOrigin(0.5).setScale(2.5);
+      scene.start_button2
+      .setInteractive()
+      .on('pointerdown', () => bumpLevel(scene) );      
+      scene.anims.create({
+        key: 'capsule',
+        frames: scene.anims.generateFrameNumbers('capsule'),
+        frameRate: 8,
+        repeat: -1
+      });
+        scene.add.text(config.width/2, BLOCK_SIZE*9, 'START', {
+        fontFamily: 'courier new',
+        fontSize: '36px',
+        fontWeight: 'bold',
+        color: 'white'
+      });     
+     scene.start_button2.play('capsule', true);
       break;
 
     case Game_State.LEVEL:
@@ -153,25 +153,25 @@ function startLevel(scene)
   
     // Create a sprite group for all spikes, set common properties to ensure that
     // sprites in the group don't move via gravity or by player collisions
-    // scene.spikes = scene.physics.add.group({
-    //   allowGravity: false,
-    //   immovable: true
-    // });
+    scene.spikes = scene.physics.add.group({
+      allowGravity: false,
+      immovable: true
+    });
   
     // // Get the spikes from the object layer of our Tiled map. Phaser has a
     // // createFromObjects function to do so, but it creates sprites automatically
     // // for us. We want to manipulate the sprites a bit before we use them
-    // map.getObjectLayer('Spikes').objects.forEach((spike) => {
-    //   // Add new spikes to our sprite group
-    //   const spikeSprite = scene.spikes.create(spike.x, spike.y + 200 - spike.height, 'spike').setOrigin(0);
+    map.getObjectLayer('Spikes').objects.forEach((spike) => {
+      // Add new spikes to our sprite group
+      const spikeSprite = scene.spikes.create(spike.x, spike.y + 200 - spike.height, 'spike').setOrigin(0);
     //   // By default the sprite has loads of whitespace from the base image, we
     //   // resize the sprite to reduce the amount of whitespace used by the sprite
     //   // so collisions can be more precise
-    //   spikeSprite.body.setSize(spike.width, spike.height - 20).setOffset(0, 20);
-    // });
+      spikeSprite.body.setSize(spike.width, spike.height - 20).setOffset(0, 20);
+    });
   
     // // Add collision between the player and the spikes
-    // scene.physics.add.collider(scene.player, scene.spikes, playerHit, null, scene);
+     scene.physics.add.collider(scene.player, scene.spikes, playerHit, null, scene);
   
     
   
