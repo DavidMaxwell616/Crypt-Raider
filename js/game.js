@@ -1,8 +1,8 @@
 const config = {
   type: Phaser.AUTO,
   parent: 'game',
-  width: 900,
-  height: 600,
+  width: GAME_WIDTH,
+  height: GAME_HEIGHT,
   scale: {
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH
@@ -67,22 +67,21 @@ function startLevel(scene)
       //const map = scene.make.tilemap({ data: map, tileWidth: 32, tileHeight:32 });
       var tileset = map.addTilesetImage('blocks', 'tiles');
       const layer = map.createLayer('level1', tileset, 0,BLOCK_SIZE);     
-     console.log(layer);
-       get_ready = scene.add.image(config.width/2, config.height/1.5, 'level intro').setOrigin(0.5).setScale(1.5);;
+      get_ready = scene.add.image(BLOCK_SIZE*3, BLOCK_SIZE*4, 'level intro').setOrigin(0).setScale(2);
      
-      scene.add.text(config.width*.3,  BLOCK_SIZE*7.3, 'LEVEL: '+level, {
+      scene.add.text(BLOCK_SIZE*6,  BLOCK_SIZE*6, 'LEVEL: '+level, {
         fontFamily: 'courier new',
-        fontSize: '24px',
+        fontSize: '32px',
         fontWeight: 'bold',
         color: 'white'
       });
-      scene.add.text(config.width*.3,  BLOCK_SIZE*8.3, 'LEVEL CODE: '+Level_Codes[0], {
+      scene.add.text(BLOCK_SIZE*6,  BLOCK_SIZE*7, 'LEVEL CODE: '+Level_Codes[0], {
         fontFamily: 'courier new',
-        fontSize: '24px',
+        fontSize: '32px',
         fontWeight: 'bold',
         color: 'white'
       });
-      scene.start_button2 = scene.add.sprite(config.width/2.5, config.height*.8, 'capsule').setOrigin(0.5).setScale(2.5);
+      scene.start_button2 = scene.add.sprite(BLOCK_SIZE*6, BLOCK_SIZE*8, 'capsule').setOrigin(0).setScale(2.5);
       scene.start_button2
       .setInteractive()
       .on('pointerdown', () => bumpLevel(scene) );      
@@ -92,7 +91,7 @@ function startLevel(scene)
         frameRate: 8,
         repeat: -1
       });
-        scene.add.text(config.width/2, BLOCK_SIZE*9, 'START', {
+        scene.add.text(BLOCK_SIZE*8, BLOCK_SIZE*8.5, 'START', {
         fontFamily: 'courier new',
         fontSize: '36px',
         fontWeight: 'bold',
