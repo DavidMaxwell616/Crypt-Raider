@@ -34,7 +34,8 @@ function startLevel(scene)
       start_button = scene.add.image(config.width/2, config.height*.8, 'start button').setOrigin(0.5).setScale(2.5);
       start_button
       .setInteractive()
-      .on('pointerdown', () => bumpLevel(scene) );      break;
+      .on('pointerdown', () => bumpLevel(scene) );      
+      break;
     case Game_State.LEVEL_INTRO:
       backgroundImage = scene.add.image(0, 0, 'background').setOrigin(0);
       scene.add.text(BLOCK_SIZE+30, 10, 'LEVEL: '+level, {
@@ -84,7 +85,7 @@ function startLevel(scene)
       scene.start_button2 = scene.add.sprite(BLOCK_SIZE*6, BLOCK_SIZE*8, 'capsule').setOrigin(0).setScale(2.5);
       scene.start_button2
       .setInteractive()
-      .on('pointerdown', () => bumpLevel(scene) );      
+      .on('pointerdown', () => {game_state = Game_State.LEVEL; startLevel(scene);});      
       scene.anims.create({
         key: 'capsule',
         frames: scene.anims.generateFrameNumbers('capsule'),

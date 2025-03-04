@@ -20,6 +20,7 @@ var level = 1;
 var get_ready;
 var backgroundImage;
 var score = 0;
+var platforms;
 const Level_Codes = 
 [
 'l3VIFNXL6O0',
