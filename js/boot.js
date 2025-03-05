@@ -24,6 +24,9 @@ var platforms;
 var map;
 var layer;
 var tileset;
+var levelText;
+var levelCode;
+var startText;
 const Level_Codes = 
 [
 'l3VIFNXL6O0',

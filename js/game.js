@@ -70,13 +70,13 @@ function startLevel(scene)
       layer = map.createLayer('level1', tileset, 0,BLOCK_SIZE);     
       get_ready = scene.add.image(BLOCK_SIZE*3, BLOCK_SIZE*4, 'level intro').setOrigin(0).setScale(2);
      
-      scene.add.text(BLOCK_SIZE*6,  BLOCK_SIZE*6, 'LEVEL: '+level, {
+      levelText = scene.add.text(BLOCK_SIZE*6,  BLOCK_SIZE*6, 'LEVEL: '+level, {
         fontFamily: 'courier new',
         fontSize: '32px',
         fontWeight: 'bold',
         color: 'white'
       });
-      scene.add.text(BLOCK_SIZE*6,  BLOCK_SIZE*7, 'LEVEL CODE: '+Level_Codes[0], {
+      levelCode = scene.add.text(BLOCK_SIZE*6,  BLOCK_SIZE*7, 'LEVEL CODE: '+Level_Codes[0], {
         fontFamily: 'courier new',
         fontSize: '32px',
         fontWeight: 'bold',
@@ -92,7 +92,7 @@ function startLevel(scene)
         frameRate: 8,
         repeat: -1
       });
-        scene.add.text(BLOCK_SIZE*8, BLOCK_SIZE*8.5, 'START', {
+        startText = scene.add.text(BLOCK_SIZE*8, BLOCK_SIZE*8.5, 'START', {
         fontFamily: 'courier new',
         fontSize: '36px',
         fontWeight: 'bold',
@@ -102,14 +102,15 @@ function startLevel(scene)
       break;
 
     case Game_State.LEVEL:
-      get_ready.visible = false; 
+      get_ready.visible = levelText.visible=
+      levelCode.visible = scene.start_button2.visible = 
+      startText.visible = false; 
       //var level = platforms.tilemap.layers[0];
     // There are many ways to set collision between tiles and players
     // As we want players to collide with all of the platforms, we tell Phaser to
     // set collisions for every tile in our platform layer whose index isn't -1.
     // Tiled indices can only be >= 0, therefore we are colliding with all of
     // the platform layer
-    console.log(map); 
     layer.setCollisionByExclusion(-1, true);
   
     // Add the player to the game world
