@@ -21,6 +21,9 @@ var get_ready;
 var backgroundImage;
 var score = 0;
 var platforms;
+var map;
+var layer;
+var tileset;
 const Level_Codes = 
 [
 'l3VIFNXL6O0',

@@ -63,11 +63,11 @@ function startLevel(scene)
         fontSize: '24px',
         color: 'yellow'
       });
-      var map = scene.make.tilemap({ key: 'map'});
+      map = scene.make.tilemap({ key: 'map'});
        // When loading from an array, make sure to specify the tileWidth and tileHeight
       //const map = scene.make.tilemap({ data: map, tileWidth: 32, tileHeight:32 });
-      var tileset = map.addTilesetImage('blocks', 'tiles');
-      const layer = map.createLayer('level1', tileset, 0,BLOCK_SIZE);     
+      tileset = map.addTilesetImage('blocks', 'tiles');
+      layer = map.createLayer('level1', tileset, 0,BLOCK_SIZE);     
       get_ready = scene.add.image(BLOCK_SIZE*3, BLOCK_SIZE*4, 'level intro').setOrigin(0).setScale(2);
      
       scene.add.text(BLOCK_SIZE*6,  BLOCK_SIZE*6, 'LEVEL: '+level, {
@@ -102,13 +102,15 @@ function startLevel(scene)
       break;
 
     case Game_State.LEVEL:
-    //var level = platforms.tilemap.layers[0];
+      get_ready.visible = false; 
+      //var level = platforms.tilemap.layers[0];
     // There are many ways to set collision between tiles and players
     // As we want players to collide with all of the platforms, we tell Phaser to
     // set collisions for every tile in our platform layer whose index isn't -1.
     // Tiled indices can only be >= 0, therefore we are colliding with all of
     // the platform layer
-    platforms.setCollisionByExclusion(-1, true);
+    console.log(map); 
+    layer.setCollisionByExclusion(-1, true);
   
     // Add the player to the game world
     scene.player = scene.physics.add.sprite(13*BLOCK_SIZE, 3*BLOCK_SIZE-5,'player').setScale(1.6).setOrigin(0);;
