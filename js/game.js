@@ -68,21 +68,22 @@ function startLevel(scene)
       //const map = make.tilemap({ data: map, tileWidth: 32, tileHeight:32 });
       tileset = map.addTilesetImage('blocks', 'tiles');
       layer = map.createLayer('level1', tileset, 0,BLOCK_SIZE); 
+      
       get_ready = scene.add.image(BLOCK_SIZE*3, BLOCK_SIZE*4, 'level intro').setOrigin(0).setScale(2);
      
-      levelText = scene.add.text(BLOCK_SIZE*6,  BLOCK_SIZE*6, 'LEVEL: '+level, {
+      levelText = scene.add.text(BLOCK_SIZE*6,  BLOCK_SIZE*6.5, 'LEVEL: '+level, {
         fontFamily: 'courier new',
         fontSize: '32px',
         fontWeight: 'bold',
         color: 'white'
       });
-      levelCode = scene.add.text(BLOCK_SIZE*6,  BLOCK_SIZE*7, 'LEVEL CODE: '+Level_Codes[0], {
+      levelCode = scene.add.text(BLOCK_SIZE*6,  BLOCK_SIZE*7.5, 'LEVEL CODE: '+Level_Codes[0], {
         fontFamily: 'courier new',
         fontSize: '32px',
         fontWeight: 'bold',
         color: 'white'
       });
-      start_button2 = scene.add.sprite(BLOCK_SIZE*6, BLOCK_SIZE*8, 'capsule').setOrigin(0).setScale(2.5);
+      start_button2 = scene.add.sprite(BLOCK_SIZE*6, BLOCK_SIZE*8.5, 'capsule').setOrigin(0).setScale(2.5);
       start_button2
       .setInteractive()
       .on('pointerdown', () => {game_state = Game_State.LEVEL; startLevel(scene);});      
@@ -92,7 +93,7 @@ function startLevel(scene)
         frameRate: 8,
         repeat: -1
       });
-        startText = scene.add.text(BLOCK_SIZE*8, BLOCK_SIZE*8.5, 'START', {
+        startText = scene.add.text(BLOCK_SIZE*8.5, BLOCK_SIZE*9, 'START', {
         fontFamily: 'courier new',
         fontSize: '36px',
         fontWeight: 'bold',
