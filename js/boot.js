@@ -20,7 +20,7 @@ var level = 1;
 var get_ready;
 var backgroundImage;
 var score = 0;
-var platforms;
+//var platforms;
 var map;
 var layer;
 var tileset;

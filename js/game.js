@@ -65,9 +65,9 @@ function startLevel(scene)
       });
       map = scene.make.tilemap({ key: 'map'});
        // When loading from an array, make sure to specify the tileWidth and tileHeight
-      //const map = scene.make.tilemap({ data: map, tileWidth: 32, tileHeight:32 });
+      //const map = make.tilemap({ data: map, tileWidth: 32, tileHeight:32 });
       tileset = map.addTilesetImage('blocks', 'tiles');
-      layer = map.createLayer('level1', tileset, 0,BLOCK_SIZE);     
+      layer = map.createLayer('level1', tileset, 0,BLOCK_SIZE); 
       get_ready = scene.add.image(BLOCK_SIZE*3, BLOCK_SIZE*4, 'level intro').setOrigin(0).setScale(2);
      
       levelText = scene.add.text(BLOCK_SIZE*6,  BLOCK_SIZE*6, 'LEVEL: '+level, {
@@ -82,8 +82,8 @@ function startLevel(scene)
         fontWeight: 'bold',
         color: 'white'
       });
-      scene.start_button2 = scene.add.sprite(BLOCK_SIZE*6, BLOCK_SIZE*8, 'capsule').setOrigin(0).setScale(2.5);
-      scene.start_button2
+      start_button2 = scene.add.sprite(BLOCK_SIZE*6, BLOCK_SIZE*8, 'capsule').setOrigin(0).setScale(2.5);
+      start_button2
       .setInteractive()
       .on('pointerdown', () => {game_state = Game_State.LEVEL; startLevel(scene);});      
       scene.anims.create({
@@ -98,13 +98,16 @@ function startLevel(scene)
         fontWeight: 'bold',
         color: 'white'
       });     
-     scene.start_button2.play('capsule', true);
+     start_button2.play('capsule', true);
       break;
 
     case Game_State.LEVEL:
       get_ready.visible = levelText.visible=
-      levelCode.visible = scene.start_button2.visible = 
+      levelCode.visible = start_button2.visible = 
       startText.visible = false; 
+//wall blocks = 90 x 90
+
+
       //var level = platforms.tilemap.layers[0];
     // There are many ways to set collision between tiles and players
     // As we want players to collide with all of the platforms, we tell Phaser to
@@ -114,19 +117,19 @@ function startLevel(scene)
     layer.setCollisionByExclusion(-1, true);
   
     // Add the player to the game world
-    scene.player = scene.physics.add.sprite(13*BLOCK_SIZE, 3*BLOCK_SIZE-5,'player').setScale(1.6).setOrigin(0);;
-    scene.player.setBounce(0.1); // our player will bounce from items
-    scene.player.setCollideWorldBounds(true); // don't go out of the map
-    scene.physics.add.collider(scene.player, platforms);
+    player = scene.physics.add.sprite(13*BLOCK_SIZE, 3*BLOCK_SIZE-5,'player').setScale(1.6).setOrigin(0);;
+    player.setBounce(0.1); // our player will bounce from items
+    player.setCollideWorldBounds(true); // don't go out of the map
+    scene.physics.add.collider(player, layer);
    
-    scene.capsule = scene.physics.add.sprite(6*BLOCK_SIZE, 3*BLOCK_SIZE,'capsule').setScale(1.25).setOrigin(0);;
-    scene.capsule.setCollideWorldBounds(true); // don't go out of the map
-    scene.capsule.setGravityY(1500);
-    scene.capsule.setBounce(.2);
-    scene.physics.add.collider(scene.capsule, platforms);
-    scene.physics.add.collider(scene.capsule, scene.player);
-    scene.portal = scene.physics.add.sprite(9*BLOCK_SIZE, 12*BLOCK_SIZE,'portal').setScale(1.75).setOrigin(0);;
-    scene.physics.add.collider(scene.capsule, scene.portal, levelUp, null, scene);
+    capsule = scene.physics.add.sprite(6*BLOCK_SIZE, 3*BLOCK_SIZE,'capsule').setScale(1.25).setOrigin(0);;
+    capsule.setCollideWorldBounds(true); // don't go out of the map
+    capsule.setGravityY(1500);
+    capsule.setBounce(.2);
+    scene.physics.add.collider(capsule, layer);
+    scene.physics.add.collider(capsule, player);
+    portal = scene.physics.add.sprite(9*BLOCK_SIZE, 12*BLOCK_SIZE,'portal').setScale(1.75).setOrigin(0);;
+    scene.physics.add.collider(capsule, portal, levelUp, null, scene);
    
     scene.anims.create({
       key: 'walk',
@@ -155,31 +158,31 @@ function startLevel(scene)
       frameRate: 8,
       repeat: -1
     });
-    scene.capsule.play('capsule', true);
+    capsule.play('capsule', true);
     // Enable user input via cursor keys
-    scene.cursors = scene.input.keyboard.createCursorKeys();
+    cursors = scene.input.keyboard.createCursorKeys();
   
     // Create a sprite group for all spikes, set common properties to ensure that
     // sprites in the group don't move via gravity or by player collisions
-    scene.spikes = scene.physics.add.group({
-      allowGravity: false,
-      immovable: true
-    });
+    // spikes = physics.add.group({
+    //   allowGravity: false,
+    //   immovable: true
+    // });
   
     // // Get the spikes from the object layer of our Tiled map. Phaser has a
     // // createFromObjects function to do so, but it creates sprites automatically
     // // for us. We want to manipulate the sprites a bit before we use them
-    map.getObjectLayer('Spikes').objects.forEach((spike) => {
-      // Add new spikes to our sprite group
-      const spikeSprite = scene.spikes.create(spike.x, spike.y + 200 - spike.height, 'spike').setOrigin(0);
-    //   // By default the sprite has loads of whitespace from the base image, we
-    //   // resize the sprite to reduce the amount of whitespace used by the sprite
-    //   // so collisions can be more precise
-      spikeSprite.body.setSize(spike.width, spike.height - 20).setOffset(0, 20);
-    });
+    // map.getObjectLayer('Spikes').objects.forEach((spike) => {
+    //   // Add new spikes to our sprite group
+    //   const spikeSprite = spikes.create(spike.x, spike.y + 200 - spike.height, 'spike').setOrigin(0);
+    // //   // By default the sprite has loads of whitespace from the base image, we
+    // //   // resize the sprite to reduce the amount of whitespace used by the sprite
+    // //   // so collisions can be more precise
+    //   spikeSprite.body.setSize(spike.width, spike.height - 20).setOffset(0, 20);
+    // });
   
     // // Add collision between the player and the spikes
-     scene.physics.add.collider(scene.player, scene.spikes, playerHit, null, scene);
+     //physics.add.collider(player, spikes, playerHit, null, scene);
   
     
   
@@ -219,31 +222,31 @@ function update() {
     case Game_State.LEVEL:
     // Control the player with left or right keys
     if (this.cursors.left.isDown) {
-      this.player.setVelocityX(-200);
-      this.player.setVelocityY(0);
-      this.player.setFlipX(true);
-      this.player.play('walk', true);
+      player.setVelocityX(-200);
+      player.setVelocityY(0);
+      player.setFlipX(true);
+      player.play('walk', true);
     } 
     else if (this.cursors.right.isDown) {
-      this.player.setVelocityX(200);
-      this.player.setVelocityY(0);
-      this.player.setFlipX(false);
-      this.player.play('walk', true);
+      player.setVelocityX(200);
+      player.setVelocityY(0);
+      player.setFlipX(false);
+      player.play('walk', true);
     }
     else if (this.cursors.up.isDown) {
-      this.player.setVelocityY(-200);
-      this.player.setVelocityX(0);
-      this.player.play('walk_up', true);
+      player.setVelocityY(-200);
+      player.setVelocityX(0);
+      player.play('walk_up', true);
     } 
     else if (this.cursors.down.isDown) {
-      this.player.setVelocityY(200);
-      this.player.setVelocityX(0);
-      this.player.play('walk_down', true);
+      player.setVelocityY(200);
+      player.setVelocityX(0);
+      player.play('walk_down', true);
     } 
     else {
-      this.player.setVelocityX(0);
-      this.player.setVelocityY(0);
-      this.player.play('idle', true);
+      player.setVelocityX(0);
+      player.setVelocityY(0);
+      player.play('idle', true);
     };
     
     default:
@@ -277,6 +280,6 @@ function playerHit(player, spike) {
 }
 
 function levelUp(){
-  this.capsule.visible = false;
+  capsule.visible = false;
   console.log('level up!!!');
 }
