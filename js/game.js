@@ -14,6 +14,7 @@ const config = {
   },
   physics: {
     default: 'arcade',
+    debug: true
   }
 };
 let game_state = Game_State.INTRO;
@@ -67,7 +68,7 @@ function startLevel(scene)
        // When loading from an array, make sure to specify the tileWidth and tileHeight
       //const map = make.tilemap({ data: map, tileWidth: 32, tileHeight:32 });
       tileset = map.addTilesetImage('blocks', 'tiles');
-      layer = map.createLayer('level1', tileset, 0,BLOCK_SIZE); 
+      layer = map.createLayer('level1', tileset, 0,BLOCK_SIZE).setScale(.78); 
       
       get_ready = scene.add.image(BLOCK_SIZE*3, BLOCK_SIZE*4, 'level intro').setOrigin(0).setScale(2);
      
