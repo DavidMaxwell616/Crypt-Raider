@@ -70,21 +70,21 @@ function startLevel(scene)
       tileset = map.addTilesetImage('blocks', 'tiles');
       layer = map.createLayer('level1', tileset, 0,BLOCK_SIZE).setScale(.78); 
       
-      get_ready = scene.add.image(BLOCK_SIZE*3, BLOCK_SIZE*4, 'level intro').setOrigin(0).setScale(2);
+      get_ready = scene.add.image(BLOCK_SIZE*4.9, BLOCK_SIZE*4, 'level intro').setOrigin(0).setScale(1.45,1.7);
      
-      levelText = scene.add.text(BLOCK_SIZE*6,  BLOCK_SIZE*6.5, 'LEVEL: '+level, {
+      levelText = scene.add.text(BLOCK_SIZE*6,  BLOCK_SIZE*6, 'LEVEL: '+level, {
         fontFamily: 'courier new',
-        fontSize: '32px',
+        fontSize: '24px',
         fontWeight: 'bold',
         color: 'white'
       });
-      levelCode = scene.add.text(BLOCK_SIZE*6,  BLOCK_SIZE*7.5, 'LEVEL CODE: '+Level_Codes[0], {
+      levelCode = scene.add.text(BLOCK_SIZE*6,  BLOCK_SIZE*7, 'LEVEL CODE: '+Level_Codes[0], {
         fontFamily: 'courier new',
-        fontSize: '32px',
+        fontSize: '24px',
         fontWeight: 'bold',
         color: 'white'
       });
-      start_button2 = scene.add.sprite(BLOCK_SIZE*6, BLOCK_SIZE*8.5, 'capsule').setOrigin(0).setScale(2.5);
+      start_button2 = scene.add.sprite(BLOCK_SIZE*7, BLOCK_SIZE*8.1, 'capsule').setOrigin(0).setScale(2);
       start_button2
       .setInteractive()
       .on('pointerdown', () => {game_state = Game_State.LEVEL; startLevel(scene);});      
@@ -94,9 +94,9 @@ function startLevel(scene)
         frameRate: 8,
         repeat: -1
       });
-        startText = scene.add.text(BLOCK_SIZE*8.5, BLOCK_SIZE*9, 'START', {
+        startText = scene.add.text(BLOCK_SIZE*8.5, BLOCK_SIZE*8.5, 'START', {
         fontFamily: 'courier new',
-        fontSize: '36px',
+        fontSize: '24px',
         fontWeight: 'bold',
         color: 'white'
       });     
@@ -119,7 +119,7 @@ function startLevel(scene)
     layer.setCollisionByExclusion(-1, true);
   
     // Add the player to the game world
-    player = scene.physics.add.sprite(13*BLOCK_SIZE, 3*BLOCK_SIZE-5,'player').setScale(1.6).setOrigin(0);;
+    player = scene.physics.add.sprite(13*BLOCK_SIZE, 3*BLOCK_SIZE+24,'player').setScale(1.4).setOrigin(.5);;
     player.setBounce(0.1); // our player will bounce from items
     player.setCollideWorldBounds(true); // don't go out of the map
     scene.physics.add.collider(player, layer);

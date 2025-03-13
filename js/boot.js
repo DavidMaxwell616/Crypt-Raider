@@ -5,8 +5,8 @@ const Game_State = {
   GAME_OVER: 3
 };
 const BLOCK_SIZE = 50;
-const GAME_WIDTH = 1152;
-const GAME_HEIGHT = 818;
+const GAME_WIDTH = 900;
+const GAME_HEIGHT = 650;
 var splash;
 var glow1;
 var glow2;
