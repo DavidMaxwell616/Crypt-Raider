@@ -111,9 +111,10 @@ function startLevel(scene) {
         .setIgnoreGravity(true);
       capsule = scene.matter.add.sprite(6 * BLOCK_SIZE, 3 * BLOCK_SIZE, 'capsule')
         .setScale(1.25)
-        .setOrigin(0.5);
-      portal = scene.matter.add.sprite(9 * BLOCK_SIZE, 12 * BLOCK_SIZE, 'portal')
-        .setScale(1.75)
+        .setOrigin(0.5)
+        .setIgnoreGravity(false);
+      portal = scene.matter.add.sprite(9 * BLOCK_SIZE + BLOCK_SIZE / 2, 12 * BLOCK_SIZE + BLOCK_SIZE / 2, 'portal')
+        .setScale(1.72)
         .setOrigin(0.5)
         .setStatic(true);
 
@@ -153,19 +154,23 @@ function startLevel(scene) {
   }
 }
 function renderBlocks(scene) {
-  var blockX = 0;
-  var blockY = BLOCK_SIZE;
+  var blockX = BLOCK_SIZE / 2;
+  var blockY = BLOCK_SIZE + BLOCK_SIZE / 2;
   levelData.walls.forEach(block => {
     if (block > 0) {
-      var element = scene.add.sprite(blockX, blockY, 'blocks').setOrigin(0).setFrame(block);
+      var element = scene.matter.add.sprite(blockX, blockY, 'blocks')
+        .setOrigin(.5)
+        .setScale(.78125)
+        .setFrame(block)
+        .setStatic(true)
+        .setIgnoreGravity(true);
       blocks.add(element);
     }
     blockX += BLOCK_SIZE;
-    if (blockX > GAME_WIDTH - BLOCK_SIZE) {
-      blockX = 0;
+    if (blockX > GAME_WIDTH - BLOCK_SIZE / 2) {
+      blockX = BLOCK_SIZE / 2;
       blockY += BLOCK_SIZE;
     }
-    console.log(blockX);
   });
 }
 
