@@ -11,9 +11,6 @@ const config = {
   physics: {
     default: 'matter',
     matter: {
-      gravity: {
-        y: 10,
-      },
       debug: true,
     },
   },
@@ -110,14 +107,15 @@ function startLevel(scene) {
         .setOrigin(.5)
         .setIgnoreGravity(true);
       capsule = scene.matter.add.sprite(6 * BLOCK_SIZE, 3 * BLOCK_SIZE, 'capsule')
-        .setScale(1.25)
+        .setScale(1.28)
         .setOrigin(0.5)
-        .setIgnoreGravity(false);
+        .setDensity(0.001);
+      var sprite_body = scene.matter.bodies.circle(6 * BLOCK_SIZE, 3 * BLOCK_SIZE, BLOCK_SIZE * .28, BLOCK_SIZE * .28);
+      capsule.setExistingBody(sprite_body);
       portal = scene.matter.add.sprite(9 * BLOCK_SIZE + BLOCK_SIZE / 2, 12 * BLOCK_SIZE + BLOCK_SIZE / 2, 'portal')
         .setScale(1.72)
         .setOrigin(0.5)
         .setStatic(true);
-
       scene.anims.create({
         key: 'walk',
         frames: scene.anims.generateFrameNumbers('player', { frames: [4, 5, 6] }),
