@@ -31,6 +31,9 @@ var levelText;
 var levelCode;
 var startText;
 var cursors;
+var portal;
+var portal_open;
+var portalOpen;
 const Level_Codes =
   [
     'l3VIFNXL6O0',

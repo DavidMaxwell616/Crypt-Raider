@@ -9,10 +9,11 @@ const config = {
     update,
   },
   physics: {
-    default: 'matter',
+    default: "matter",
     matter: {
-      debug: true,
-    },
+      gravity: { y: .5 },
+      debug: true
+    }
   },
 };
 let game_state = Game_State.INTRO;
@@ -105,17 +106,37 @@ function startLevel(scene) {
       player = scene.matter.add.sprite(13 * BLOCK_SIZE, 3 * BLOCK_SIZE + 24, 'player')
         .setScale(1.4)
         .setOrigin(.5)
+        .setDensity(5)
+        .setFixedRotation(true)
         .setIgnoreGravity(true);
+      player.body.label = 'player';
       capsule = scene.matter.add.sprite(6 * BLOCK_SIZE, 3 * BLOCK_SIZE, 'capsule')
-        .setScale(1.28)
+        .setScale(1.4)
         .setOrigin(0.5)
-        .setDensity(0.001);
-      var sprite_body = scene.matter.bodies.circle(6 * BLOCK_SIZE, 3 * BLOCK_SIZE, BLOCK_SIZE * .28, BLOCK_SIZE * .28);
-      capsule.setExistingBody(sprite_body);
-      portal = scene.matter.add.sprite(9 * BLOCK_SIZE + BLOCK_SIZE / 2, 12 * BLOCK_SIZE + BLOCK_SIZE / 2, 'portal')
+        .setBounce(0.4)
+        .setCircle(25)
+        .setDensity(.005)
+        .setIgnoreGravity(false);
+      capsule.body.label = 'capsule';
+      portal_open = scene.matter.add.sprite(9 * BLOCK_SIZE + BLOCK_SIZE / 2, 12 * BLOCK_SIZE + BLOCK_SIZE / 2 + 2, 'portal open')
+        .setScale(1.72)
+        .setOrigin(0.5)
+        .setSensor(true)
+        .setStatic(true);
+      portal_open.body.label = 'portal open';
+      scene.anims.create({
+        key: 'portal open',
+        frames: scene.anims.generateFrameNumbers('portal open'),
+        frameRate: 8,
+        repeat: -1
+      });
+      portal_open.visible = false;
+      portal_open.play('portal open', true);
+      portal = scene.matter.add.sprite(9 * BLOCK_SIZE + BLOCK_SIZE / 2, 12 * BLOCK_SIZE + BLOCK_SIZE / 2 + 2, 'portal')
         .setScale(1.72)
         .setOrigin(0.5)
         .setStatic(true);
+      portal.body.label = 'portal';
       scene.anims.create({
         key: 'walk',
         frames: scene.anims.generateFrameNumbers('player', { frames: [4, 5, 6] }),
@@ -146,6 +167,14 @@ function startLevel(scene) {
       capsule.play('capsule', true);
       cursors = scene.input.keyboard.createCursorKeys();
       renderBlocks(scene);
+      scene.matter.world.on("collisionstart", (event, bodyA, bodyB) => {
+        if ((!portalOpen && bodyA.label == "capsule" && bodyB.label == "portal") || (bodyB.label == "portal" && bodyA.label == "capsule")) {
+          openPortal(scene);
+        }
+        if ((portalOpen && bodyA.label == "player" && bodyB.label == "portal") || (bodyB.label == "portal" && bodyA.label == "player")) {
+          bumpLevel(scene);
+        }
+      });
       break;
     default:
       break;
@@ -172,7 +201,12 @@ function renderBlocks(scene) {
   });
 }
 
-
+function openPortal(scene) {
+  portalOpen = true;
+  capsule.visible = false;
+  capsule.body.destroy();
+  portal_open.visible = true;
+}
 function bumpLevel(scene) {
   switch (game_state) {
     case Game_State.INTRO:
@@ -182,8 +216,8 @@ function bumpLevel(scene) {
       startLevel(scene);
       break;
     case Game_State.LEVEL:
-      capsule.visible = false;
-      game_state = Game_State.LEVEL_INTRO;
+      portalOpen = false;
+      // game_state = Game_State.LEVEL_INTRO;
       console.log('contact');
       // startLevel(scene);
       break;

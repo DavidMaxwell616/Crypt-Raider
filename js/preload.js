@@ -8,6 +8,8 @@ function preload() {
   this.load.image('start button', 'assets/images/start button.png');
   this.load.image('spike', 'assets/images/spike.png');
   this.load.image('portal', 'assets/images/portal.png');
+  this.load.spritesheet('portal open', 'assets/spritesheets/portal open.png',
+    { frameWidth: 64, frameHeight: 60 });
   this.load.spritesheet('player', 'assets/spritesheets/player.png',
     { frameWidth: 34, frameHeight: 34 });
   this.load.spritesheet('capsule', 'assets/spritesheets/capsule.png',
