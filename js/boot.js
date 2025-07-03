@@ -2,7 +2,8 @@ const Game_State = {
   INTRO: 0,
   LEVEL_INTRO: 1,
   LEVEL: 2,
-  GAME_OVER: 3
+  LEVEL_TRANSITION: 3,
+  GAME_OVER: 4
 };
 const BLOCK_SIZE = 50;
 const GAME_WIDTH = 900;
@@ -34,6 +35,7 @@ var cursors;
 var portal;
 var portal_open;
 var portalOpen;
+var level_won;
 const Level_Codes =
   [
     'l3VIFNXL6O0',

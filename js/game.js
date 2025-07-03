@@ -144,6 +144,20 @@ function startLevel(scene) {
         repeat: -1
       });
 
+      level_won = scene.matter.add.sprite(9 * BLOCK_SIZE + BLOCK_SIZE / 2, 11 * BLOCK_SIZE + BLOCK_SIZE / 2 + 2, 'level won')
+        .setScale(1.72)
+        .setOrigin(0.5)
+        .setSensor(true)
+        .setStatic(true);
+      level_won.body.label = 'level won';
+      scene.anims.create({
+        key: 'level won',
+        frames: scene.anims.generateFrameNumbers('level won'),
+        frameRate: 8,
+        repeat: -1
+      });
+      level_won.visible = false;
+
       scene.anims.create({
         key: 'idle',
         frames: scene.anims.generateFrameNumbers('player', { frames: [0] }),
@@ -175,6 +189,8 @@ function startLevel(scene) {
           bumpLevel(scene);
         }
       });
+      break;
+    case Game_State.LEVEL_TRANSITION:
       break;
     default:
       break;
@@ -217,9 +233,10 @@ function bumpLevel(scene) {
       break;
     case Game_State.LEVEL:
       portalOpen = false;
-      // game_state = Game_State.LEVEL_INTRO;
-      console.log('contact');
-      // startLevel(scene);
+      level_won.visible = true;
+      level_won.play('level won', true);
+      player.visible = false;
+      game_state = Game_State.LEVEL_TRANSITION;
       break;
     default:
       break;
