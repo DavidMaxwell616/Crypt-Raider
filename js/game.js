@@ -144,19 +144,38 @@ function startLevel(scene) {
         repeat: -1
       });
 
-      level_won = scene.matter.add.sprite(9 * BLOCK_SIZE + BLOCK_SIZE / 2, 11 * BLOCK_SIZE + BLOCK_SIZE / 2 + 2, 'level won')
+      player_level_won = scene.matter.add.sprite(9 * BLOCK_SIZE + BLOCK_SIZE / 2, 11 * BLOCK_SIZE + BLOCK_SIZE / 2 + 2, 'player level won')
         .setScale(1.72)
         .setOrigin(0.5)
         .setSensor(true)
         .setStatic(true);
-      level_won.body.label = 'level won';
+      player_level_won.body.label = 'player level won';
       scene.anims.create({
-        key: 'level won',
-        frames: scene.anims.generateFrameNumbers('level won'),
+        key: 'player level won',
+        frames: scene.anims.generateFrameNumbers('player level won'),
         frameRate: 8,
-        repeat: -1
+        repeat: 0
       });
-      level_won.visible = false;
+      player_level_won.visible = false;
+      player_level_won.on('animationcomplete', function (animation, frame) {
+        if (animation.key === 'player level won') {
+          game_state = Game_State.LEVEL_TRANSITION;
+        }
+      });
+
+      player_level_intro = scene.matter.add.sprite(9 * BLOCK_SIZE + BLOCK_SIZE / 2, 11 * BLOCK_SIZE + BLOCK_SIZE / 2 + 2, 'player level intro')
+        .setScale(1.72)
+        .setOrigin(0.5)
+        .setSensor(true)
+        .setStatic(true);
+      player_level_intro.body.label = 'player level intro';
+      scene.anims.create({
+        key: 'player level intro',
+        frames: scene.anims.generateFrameNumbers('player level intro'),
+        frameRate: 8,
+        repeat: 0
+      });
+      player_level_intro.visible = false;
 
       scene.anims.create({
         key: 'idle',
@@ -191,6 +210,7 @@ function startLevel(scene) {
       });
       break;
     case Game_State.LEVEL_TRANSITION:
+      player_level_intro.visible = true;
       break;
     default:
       break;
@@ -233,10 +253,9 @@ function bumpLevel(scene) {
       break;
     case Game_State.LEVEL:
       portalOpen = false;
-      level_won.visible = true;
-      level_won.play('level won', true);
+      player_level_won.visible = true;
+      player_level_won.play('player level won', true);
       player.visible = false;
-      game_state = Game_State.LEVEL_TRANSITION;
       break;
     default:
       break;

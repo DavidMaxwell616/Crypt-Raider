@@ -35,7 +35,8 @@ var cursors;
 var portal;
 var portal_open;
 var portalOpen;
-var level_won;
+var player_level_won;
+var player_level_intro;
 const Level_Codes =
   [
     'l3VIFNXL6O0',

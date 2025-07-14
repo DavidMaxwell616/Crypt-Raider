@@ -10,12 +10,14 @@ function preload() {
   this.load.image('portal', 'assets/images/portal.png');
   this.load.spritesheet('portal open', 'assets/spritesheets/portal open.png',
     { frameWidth: 64, frameHeight: 60 });
-  this.load.spritesheet('level won', 'assets/spritesheets/level won.png',
+  this.load.spritesheet('player level won', 'assets/spritesheets/level won.png',
     { frameWidth: 61, frameHeight: 85 });
   this.load.spritesheet('player', 'assets/spritesheets/player.png',
     { frameWidth: 34, frameHeight: 34 });
   this.load.spritesheet('capsule', 'assets/spritesheets/capsule.png',
     { frameWidth: 32, frameHeight: 32 });
+  this.load.spritesheet('player level intro', 'assets/spritesheets/player_intro.png',
+    { frameWidth: 87, frameHeight: 95 });
   this.load.path = '../assets/json/';
   this.load.json('levelData', 'level_data.json');
 }
