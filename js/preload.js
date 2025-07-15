@@ -10,7 +10,7 @@ function preload() {
   this.load.image('portal', 'assets/images/portal.png');
   this.load.spritesheet('portal open', 'assets/spritesheets/portal open.png',
     { frameWidth: 64, frameHeight: 60 });
-  this.load.spritesheet('player level won', 'assets/spritesheets/level won.png',
+  this.load.spritesheet('player level won', 'assets/spritesheets/player level won.png',
     { frameWidth: 61, frameHeight: 85 });
   this.load.spritesheet('player', 'assets/spritesheets/player.png',
     { frameWidth: 34, frameHeight: 34 });

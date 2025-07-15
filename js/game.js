@@ -42,32 +42,38 @@ function startLevel(scene) {
         .on('pointerdown', () => bumpLevel());
       break;
     case Game_State.LEVEL_INTRO:
+      info_group = _scene.add.group();
       backgroundImage = _scene.add.image(0, 0, 'background').setOrigin(0);
-      _scene.add.text(BLOCK_SIZE + 30, 10, 'LEVEL: ' + level, {
+      var info = _scene.add.text(BLOCK_SIZE + 30, 10, 'LEVEL: ' + level, {
         fontFamily: 'impact',
         fontSize: '24px',
         color: 'yellow'
       });
-      _scene.add.text(BLOCK_SIZE * 4 + 20, 10, 'SCORE: ' + score, {
+      info_group.add(info);
+      info = _scene.add.text(BLOCK_SIZE * 4 + 20, 10, 'SCORE: ' + score, {
         fontFamily: 'impact',
         fontSize: '24px',
         color: 'yellow'
       });
-      _scene.add.text(BLOCK_SIZE * 7 + 20, 10, 'ENERGY', {
+      info_group.add(info);
+      info = _scene.add.text(BLOCK_SIZE * 7 + 20, 10, 'ENERGY', {
         fontFamily: 'impact',
         fontSize: '24px',
         color: 'yellow'
       });
-      _scene.add.text(BLOCK_SIZE * 12 + 20, 10, 'TIME', {
+      info_group.add(info);
+      info = _scene.add.text(BLOCK_SIZE * 12 + 20, 10, 'TIME', {
         fontFamily: 'impact',
         fontSize: '24px',
         color: 'yellow'
       });
-      _scene.add.text(BLOCK_SIZE * 14 + 20, 10, 'LIVES', {
+      info_group.add(info);
+      info = _scene.add.text(BLOCK_SIZE * 14 + 20, 10, 'LIVES', {
         fontFamily: 'impact',
         fontSize: '24px',
         color: 'yellow'
       });
+      info_group.add(info);
       get_ready = _scene.add.image(BLOCK_SIZE * 4.9, BLOCK_SIZE * 4, 'level intro').setOrigin(0).setScale(1.45, 1.7);
 
       levelText = _scene.add.text(BLOCK_SIZE * 6, BLOCK_SIZE * 6, 'LEVEL: ' + level, {
@@ -175,7 +181,7 @@ function startLevel(scene) {
       _scene.anims.create({
         key: 'player level intro',
         frames: _scene.anims.generateFrameNumbers('player level intro'),
-        frameRate: 8,
+        frameRate: 16,
         repeat: -1
       });
       player_level_intro.visible = false;
@@ -216,6 +222,7 @@ function startLevel(scene) {
       break;
   }
 }
+
 function clearLevel() {
   player_level_intro.visible = true;
   player_level_intro.play('player level intro', true);
@@ -223,9 +230,15 @@ function clearLevel() {
     block.destroy();
     _scene.matter.world.remove(block);
   })
-  portal_open.visible = false;
-  portal.visible = false;
-  splash.visible = glow1.visible = glow2.visible = true;
+  info_group.visible = false;
+  portal_open.visible = portal.visible = levelText.visible =
+    backgroundImage.visible = false;
+  splash.visible = true;
+  glow1.visible = glow2.visible =
+    start_button.visible = true;
+  glow1.scale = glow2.scale =
+    splash.scale = start_button.scale = .75;
+  splash.y = glow1.y = glow2.y -= 50;
 }
 
 function renderBlocks() {
@@ -275,7 +288,8 @@ function bumpLevel() {
 }
 function update() {
   switch (game_state) {
-    case Game_State.INTRO:
+    case Game_State.INTRO ||
+      Game_State.LEVEL_TRANSITION:
       if (glow1.scale < 0 || glow1.scale > 3) {
         glow1_grow *= -1;
       }
