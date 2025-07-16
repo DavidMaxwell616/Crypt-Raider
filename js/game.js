@@ -40,6 +40,11 @@ function startLevel(scene) {
       start_button
         .setInteractive()
         .on('pointerdown', () => bumpLevel());
+      level_complete = _scene.add.image(config.width / 2, config.height * .75, 'level complete').setOrigin(0.5).setScale(1.5);
+      level_complete
+        .setInteractive()
+        .on('pointerdown', () => bumpLevel())
+        .visible = false;
       break;
     case Game_State.LEVEL_INTRO:
       info_group = _scene.add.group();
@@ -224,6 +229,7 @@ function startLevel(scene) {
 }
 
 function clearLevel() {
+  game_state = Game_State.LEVEL_TRANSITION;
   player_level_intro.visible = true;
   player_level_intro.play('player level intro', true);
   blocks.children.each(block => {
@@ -235,10 +241,12 @@ function clearLevel() {
     backgroundImage.visible = false;
   splash.visible = true;
   glow1.visible = glow2.visible =
-    start_button.visible = true;
-  glow1.scale = glow2.scale =
-    splash.scale = start_button.scale = .75;
-  splash.y = glow1.y = glow2.y -= 50;
+    level_complete.visible = true;
+  glow1.scale = glow2.scale = splash.scale = .75;
+  splash.y = glow1.y = glow2.y -= 40;
+  level++;
+  game_state = Game_State.LEVEL;
+  renderBlocks();
 }
 
 function renderBlocks() {
@@ -288,13 +296,14 @@ function bumpLevel() {
 }
 function update() {
   switch (game_state) {
-    case Game_State.INTRO ||
-      Game_State.LEVEL_TRANSITION:
-      if (glow1.scale < 0 || glow1.scale > 3) {
-        glow1_grow *= -1;
+    case Game_State.INTRO:
+    case Game_State.LEVEL_TRANSITION:
+      const glow_scale = game_state == Game_State.INTRO ? 3 : 1;
+      if (glow1.scale < 0 || glow1.scale > glow_scale) {
+        glow1_grow *= -.5;
       }
-      if (glow2.scale < 0 || glow2.scale > 3) {
-        glow2_grow *= -1;
+      if (glow2.scale < 0 || glow2.scale > glow_scale) {
+        glow2_grow *= -.5;
       }
       glow1.scale += glow1_grow;
       glow2.scale += glow2_grow;
@@ -333,9 +342,4 @@ function update() {
     default:
       break;
   }
-}
-
-function levelUp() {
-  capsule.visible = false;
-  console.log('level up!!!');
 }

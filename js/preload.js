@@ -6,6 +6,7 @@ function preload() {
   this.load.spritesheet('blocks', 'assets/spritesheets/blocks.png',
     { frameWidth: 64, frameHeight: 64 });
   this.load.image('start button', 'assets/images/start button.png');
+  this.load.image('level complete', 'assets/images/level complete.png');
   this.load.image('spike', 'assets/images/spike.png');
   this.load.image('portal', 'assets/images/portal.png');
   this.load.spritesheet('portal open', 'assets/spritesheets/portal open.png',

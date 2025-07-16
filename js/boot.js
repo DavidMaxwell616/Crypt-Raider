@@ -38,6 +38,7 @@ var portalOpen;
 var player_level_won;
 var player_level_intro;
 var info_group;
+var level_complete;
 const Level_Codes =
   [
     'l3VIFNXL6O0',
