@@ -79,6 +79,7 @@ function startLevel(scene) {
         color: 'yellow'
       });
       info_group.add(info);
+
       get_ready = _scene.add.image(BLOCK_SIZE * 4.9, BLOCK_SIZE * 4, 'level intro').setOrigin(0).setScale(1.45, 1.7);
 
       levelText = _scene.add.text(BLOCK_SIZE * 6, BLOCK_SIZE * 6, 'LEVEL: ' + level, {
@@ -236,9 +237,10 @@ function clearLevel() {
     block.destroy();
     _scene.matter.world.remove(block);
   })
-  info_group.visible = false;
-  portal_open.visible = portal.visible = levelText.visible =
-    backgroundImage.visible = false;
+  info_group.children.each(child => {
+    child.visible = false;
+  });
+  portal_open.visible = portal.visible = levelText.visible = backgroundImage.visible = false;
   splash.visible = true;
   glow1.visible = glow2.visible =
     level_complete.visible = true;
@@ -246,7 +248,7 @@ function clearLevel() {
   splash.y = glow1.y = glow2.y -= 40;
   level++;
   game_state = Game_State.LEVEL;
-  renderBlocks();
+  levelData = objectData['level_' + level][0];
 }
 
 function renderBlocks() {
@@ -285,6 +287,14 @@ function bumpLevel() {
       startLevel();
       break;
     case Game_State.LEVEL:
+      info_group.children.each(child => {
+        child.visible = true;
+      });
+      portal_open.visible = false;
+      renderBlocks();
+      get_ready.visible = levelText.visible =
+        levelCode.visible = level_complete.visible =
+        startText.visible = false;
       portalOpen = false;
       player_level_won.visible = true;
       player_level_won.play('player level won', true);
@@ -294,21 +304,26 @@ function bumpLevel() {
       break;
   }
 }
+
+function showGlowEffect() {
+  const glow_scale = game_state == Game_State.INTRO ? 3 : 1;
+  if (glow1.scale < 0 || glow1.scale > glow_scale) {
+    glow1_grow *= -.25;
+  }
+  if (glow2.scale < 0 || glow2.scale > glow_scale) {
+    glow2_grow *= -.25;
+  }
+  glow1.scale += glow1_grow;
+  glow2.scale += glow2_grow;
+  glow1.angle++;
+  glow2.angle++;
+}
+
 function update() {
   switch (game_state) {
     case Game_State.INTRO:
     case Game_State.LEVEL_TRANSITION:
-      const glow_scale = game_state == Game_State.INTRO ? 3 : 1;
-      if (glow1.scale < 0 || glow1.scale > glow_scale) {
-        glow1_grow *= -.5;
-      }
-      if (glow2.scale < 0 || glow2.scale > glow_scale) {
-        glow2_grow *= -.5;
-      }
-      glow1.scale += glow1_grow;
-      glow2.scale += glow2_grow;
-      glow1.angle++;
-      glow2.angle++;
+      showGlowEffect();
       break;
     case Game_State.LEVEL:
       if (cursors.left.isDown) {
