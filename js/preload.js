@@ -17,7 +17,7 @@ function preload() {
     { frameWidth: 34, frameHeight: 34 });
   this.load.spritesheet('capsule', 'assets/spritesheets/capsule.png',
     { frameWidth: 32, frameHeight: 32 });
-  this.load.spritesheet('player level intro', 'assets/spritesheets/player_intro.png',
+  this.load.spritesheet(PLAYER_LEVEL_INTRO, 'assets/spritesheets/player_intro.png',
     { frameWidth: 87, frameHeight: 95 });
   this.load.path = '../assets/json/';
   this.load.json('levelData', 'level_data.json');

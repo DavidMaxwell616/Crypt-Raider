@@ -18,7 +18,7 @@ var glow1_grow = .05;
 var glow2_grow = .01;
 var start_button;
 var start_button2;
-var level = 1;
+var level = 2;
 var get_ready;
 var backgroundImage;
 var score = 0;
@@ -39,6 +39,10 @@ var player_level_won;
 var player_level_intro;
 var info_group;
 var level_complete;
+
+const PLAYER_LEVEL_INTRO = 'player level intro';
+const PLAYER_LEVEL_WON = 'player level won';
+
 const Level_Codes =
   [
     'l3VIFNXL6O0',
