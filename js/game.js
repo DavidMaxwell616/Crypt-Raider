@@ -118,14 +118,14 @@ function startLevel(scene) {
         levelCode.visible = start_button2.visible =
         startText.visible = false;
       levelData = objectData['level_' + level][0];
-      player = _scene.matter.add.sprite(13 * BLOCK_SIZE, 3 * BLOCK_SIZE + 24, 'player')
+      player = _scene.matter.add.sprite(levelData.player_position.x * BLOCK_SIZE, levelData.player_position.y * BLOCK_SIZE + 24, 'player')
         .setScale(1.4)
         .setOrigin(.5)
         .setDensity(5)
         .setFixedRotation(true)
         .setIgnoreGravity(true);
       player.body.label = 'player';
-      capsule = _scene.matter.add.sprite(6 * BLOCK_SIZE, 3 * BLOCK_SIZE, 'capsule')
+      capsule = _scene.matter.add.sprite(levelData.capsule_position.x * BLOCK_SIZE, levelData.capsule_position.y * BLOCK_SIZE, 'capsule')
         .setScale(1.4)
         .setOrigin(0.5)
         .setBounce(0.4)
@@ -133,7 +133,7 @@ function startLevel(scene) {
         .setDensity(.005)
         .setIgnoreGravity(false);
       capsule.body.label = 'capsule';
-      portal_open = _scene.matter.add.sprite(9 * BLOCK_SIZE + BLOCK_SIZE / 2, 12 * BLOCK_SIZE + BLOCK_SIZE / 2 + 2, 'portal open')
+      portal_open = _scene.matter.add.sprite(levelData.portal_position.x * BLOCK_SIZE + BLOCK_SIZE / 2, levelData.portal_position.y * BLOCK_SIZE + BLOCK_SIZE / 2 + 2, 'portal open')
         .setScale(1.72)
         .setOrigin(0.5)
         .setSensor(true)
@@ -147,7 +147,7 @@ function startLevel(scene) {
       });
       portal_open.visible = false;
       portal_open.play('portal open', true);
-      portal = _scene.matter.add.sprite(9 * BLOCK_SIZE + BLOCK_SIZE / 2, 12 * BLOCK_SIZE + BLOCK_SIZE / 2 + 2, 'portal')
+      portal = _scene.matter.add.sprite(levelData.portal_position.x * BLOCK_SIZE + BLOCK_SIZE / 2, levelData.portal_position.y * BLOCK_SIZE + BLOCK_SIZE / 2 + 2, 'portal')
         .setScale(1.72)
         .setOrigin(0.5)
         .setStatic(true);
