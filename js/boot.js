@@ -21,6 +21,7 @@ var start_button2;
 var level = 1;
 var get_ready;
 var backgroundImage;
+var rock;
 var score = 0;
 var objectData;
 var levelData;
@@ -42,6 +43,25 @@ var level_complete;
 
 const PLAYER_LEVEL_INTRO = 'player level intro';
 const PLAYER_LEVEL_WON = 'player level won';
+const BLOCK_TYPES =
+{
+  1: 'rock',
+  2: 'rock',
+  3: 'rock',
+  4: 'sand',
+  5: 'sand',
+  6: 'sand',
+  7: 'sand',
+  8: 'sand',
+  9: 'block',
+  10: 'block',
+  11: 'block',
+  12: 'block',
+  13: 'block',
+  14: 'block',
+  15: 'block',
+  16: 'block'
+};
 
 const Level_Codes =
   [
