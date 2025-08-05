@@ -21,7 +21,7 @@ var start_button2;
 var level = 1;
 var get_ready;
 var backgroundImage;
-var rock;
+var rocks;
 var score = 0;
 var objectData;
 var levelData;

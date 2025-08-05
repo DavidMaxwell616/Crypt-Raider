@@ -133,16 +133,6 @@ function startLevel(scene) {
         .setDensity(.005)
         .setIgnoreGravity(false);
       capsule.body.label = 'capsule';
-      rock = _scene.matter.add.sprite(levelData.rock_position.x * BLOCK_SIZE, levelData.rock_position.y * BLOCK_SIZE, 'rock')
-        .setScale(1.4)
-        .setOrigin(0.5)
-        .setBounce(0.4)
-        .setCircle(22)
-        .setDensity(.005)
-        .setIgnoreGravity(false);
-      rock.body.label = 'rock';
-      if (rock.x == 0 && rock.y == 0)
-        rock.visible = false;
       portal_open = _scene.matter.add.sprite(levelData.portal_position.x * BLOCK_SIZE + BLOCK_SIZE / 2, levelData.portal_position.y * BLOCK_SIZE + BLOCK_SIZE / 2 + 2, 'portal open')
         .setScale(1.72)
         .setOrigin(0.5)
@@ -302,6 +292,7 @@ function bumpLevel(bumpState) {
     level++;
     game_state = Game_State.LEVEL;
     levelData = objectData['level_' + level][0];
+    spawnObjects();
   }
   switch (game_state) {
     case Game_State.INTRO:
@@ -316,7 +307,6 @@ function bumpLevel(bumpState) {
       });
       portal_open.visible = false;
       renderBlocks();
-      spawnObjects();
       get_ready.visible = levelText.visible =
         levelCode.visible = level_complete.visible =
         startText.visible = false;
@@ -335,8 +325,19 @@ function bumpLevel(bumpState) {
 function spawnObjects() {
   capsule.setPosition(levelData.capsule_position.x, levelData.capsule_position.y);
   player.setPosition(levelData.player_position.x, levelData.player_position.y);
+  console.log(levelData.rock_position);
   portal.setPosition(levelData.portal_position.x, levelData.portal_position.y);
-  rock.setPosition(levelData.rock_position.x, levelData.rock_position.y);
+  if (levelData.rock_position.x != 0 && levelData.rock_position.y != 0) {
+    var rock = _scene.matter.add.sprite(levelData.rock_position.x * BLOCK_SIZE, levelData.rock_position.y * BLOCK_SIZE, 'rock')
+      .setScale(1.4)
+      .setOrigin(0.5)
+      .setBounce(0.4)
+      .setCircle(22)
+      .setDensity(.005)
+      .setIgnoreGravity(false);
+    rock.body.label = 'rock';
+    rock.setPosition(levelData.rock_position.x, levelData.rock_position.y);
+  }
 }
 function showGlowEffect() {
   const glow_scale = game_state == Game_State.INTRO ? 3 : 1;

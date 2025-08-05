@@ -37,8 +37,8 @@
       ],
     "capsule_position": {"x": 6,"y":7}, 
     "player_position": {"x": 13,"y":3}, 
-    "portal_position": {"x": 12,"y":8}, 
-    "rock_position": {"x": 8,"y":4} 
+    "portal_position": {"x": 12,"y":8},
+    "rock_position": {"x": 0,"y":0} 
     }
   ],
   "level_3": [{
