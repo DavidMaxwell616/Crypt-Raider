@@ -15,7 +15,7 @@ function preload() {
   this.load.spritesheet('player level won', 'assets/spritesheets/player level won.png',
     { frameWidth: 61, frameHeight: 85 });
   this.load.spritesheet('player', 'assets/spritesheets/player.png',
-    { frameWidth: 34, frameHeight: 34 });
+    { frameWidth: 27, frameHeight: 32 });
   this.load.spritesheet('capsule', 'assets/spritesheets/capsule.png',
     { frameWidth: 32, frameHeight: 32 });
   this.load.spritesheet(PLAYER_LEVEL_INTRO, 'assets/spritesheets/player_intro.png',
