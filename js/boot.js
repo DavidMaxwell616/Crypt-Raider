@@ -40,6 +40,7 @@ var player_level_won;
 var player_level_intro;
 var info_group;
 var level_complete;
+var rocks;
 
 const PLAYER_LEVEL_INTRO = 'player level intro';
 const PLAYER_LEVEL_WON = 'player level won';

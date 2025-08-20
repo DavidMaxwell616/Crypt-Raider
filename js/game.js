@@ -45,6 +45,7 @@ function startLevel(scene) {
         .setInteractive()
         .on('pointerdown', () => bumpLevel(true))
         .visible = false;
+      rocks = _scene.add.group();
       break;
     case Game_State.LEVEL_INTRO:
       info_group = _scene.add.group();
@@ -118,14 +119,14 @@ function startLevel(scene) {
         levelCode.visible = start_button2.visible =
         startText.visible = false;
       levelData = objectData['level_' + level][0];
-      player = _scene.matter.add.sprite(levelData.player_position.x * BLOCK_SIZE, levelData.player_position.y * BLOCK_SIZE + 24, 'player')
+      player = _scene.matter.add.sprite(0, 0, 'player')
         .setScale(1.4)
         .setOrigin(.5)
         .setDensity(5)
         .setFixedRotation(true)
         .setIgnoreGravity(true);
       player.body.label = 'player';
-      capsule = _scene.matter.add.sprite(levelData.capsule_position.x * BLOCK_SIZE, levelData.capsule_position.y * BLOCK_SIZE, 'capsule')
+      capsule = _scene.matter.add.sprite(0, 0, 'capsule')
         .setScale(1.4)
         .setOrigin(0.5)
         .setBounce(0.4)
@@ -133,7 +134,7 @@ function startLevel(scene) {
         .setDensity(.005)
         .setIgnoreGravity(false);
       capsule.body.label = 'capsule';
-      portal_open = _scene.matter.add.sprite(levelData.portal_position.x * BLOCK_SIZE + BLOCK_SIZE / 2, levelData.portal_position.y * BLOCK_SIZE + BLOCK_SIZE / 2 + 2, 'portal open')
+      portal_open = _scene.matter.add.sprite(0, 0, 'portal open')
         .setScale(1.72)
         .setOrigin(0.5)
         .setSensor(true)
@@ -147,7 +148,7 @@ function startLevel(scene) {
       });
       portal_open.visible = false;
       portal_open.play('portal open', true);
-      portal = _scene.matter.add.sprite(levelData.portal_position.x * BLOCK_SIZE + BLOCK_SIZE / 2, levelData.portal_position.y * BLOCK_SIZE + BLOCK_SIZE / 2 + 2, 'portal')
+      portal = _scene.matter.add.sprite(0, 0, 'portal')
         .setScale(1.72)
         .setOrigin(0.5)
         .setStatic(true);
@@ -158,9 +159,8 @@ function startLevel(scene) {
         frameRate: 8,
         repeat: -1
       });
-
-      player_level_won = _scene.matter.add.sprite(9 * BLOCK_SIZE + BLOCK_SIZE / 2, 11 * BLOCK_SIZE + BLOCK_SIZE / 2 + 2, PLAYER_LEVEL_WON)
-        .setScale(1.72)
+      player_level_won = _scene.matter.add.sprite(0, 0, PLAYER_LEVEL_WON)
+        .setScale(1.3)
         .setOrigin(0.5)
         .setSensor(true)
         .setStatic(true);
@@ -177,6 +177,7 @@ function startLevel(scene) {
           clearLevel();
         }
       });
+      spawnObjects();
 
       player_level_intro = _scene.matter.add.sprite(game.config.width / 2, game.config.height / 2, PLAYER_LEVEL_INTRO)
         .setScale(1.72)
@@ -221,8 +222,9 @@ function startLevel(scene) {
           openPortal();
         }
         else if ((portalOpen && bodyA.label == "player" && bodyB.label == "portal") || (bodyB.label == "portal" && bodyA.label == "player")) {
-          bumpLevel();
+          bumpLevel(false);
           player_level_won.visible = true;
+          player_level_won.setPosition(player.x, player.y);
         }
         else if ((!portalOpen && bodyA.label == "player" && bodyB.label == "Rectangle Body") || (bodyB.label == "Rectangle Body" && bodyA.label == "player")) {
           if (BLOCK_TYPES[bodyB.gameObject.frame.name] === 'sand') {
@@ -239,7 +241,6 @@ function startLevel(scene) {
 }
 
 function clearLevel() {
-  game_state = Game_State.LEVEL_TRANSITION;
   player_level_intro.visible = true;
   player_level_intro.play(PLAYER_LEVEL_INTRO, true);
   blocks.children.each(block => {
@@ -249,13 +250,15 @@ function clearLevel() {
   info_group.children.each(child => {
     child.visible = false;
   });
-  portal_open.visible = portal.visible =
+  portal.visible =
     levelText.visible = backgroundImage.visible = false;
   splash.visible = true;
   glow1.visible = glow2.visible =
     level_complete.visible = true;
   glow1.scale = glow2.scale = splash.scale = .75;
   splash.y = glow1.y = glow2.y -= 40;
+  game_state = Game_State.LEVEL_TRANSITION;
+  portalOpen = false;
 }
 
 function renderBlocks() {
@@ -269,6 +272,7 @@ function renderBlocks() {
         .setFrame(block)
         .setStatic(true)
         .setIgnoreGravity(true);
+      element.visible = false;
       blocks.add(element);
     }
     blockX += BLOCK_SIZE;
@@ -285,6 +289,7 @@ function openPortal() {
   capsule.body.destroy();
   portal_open.visible = true;
 }
+
 function bumpLevel(bumpState) {
   if (bumpState) {
     glow1.visible = glow2.visible = player_level_intro.visible =
@@ -292,52 +297,63 @@ function bumpLevel(bumpState) {
     level++;
     game_state = Game_State.LEVEL;
     levelData = objectData['level_' + level][0];
+
     spawnObjects();
   }
-  switch (game_state) {
-    case Game_State.INTRO:
-      game_state = Game_State.LEVEL_INTRO;
-      glow1.visible = glow2.visible =
-        splash.visible = start_button.visible = false;
-      startLevel();
-      break;
-    case Game_State.LEVEL:
-      info_group.children.each(child => {
-        child.visible = true;
-      });
-      portal_open.visible = false;
-      renderBlocks();
-      get_ready.visible = levelText.visible =
-        levelCode.visible = level_complete.visible =
-        startText.visible = false;
-      portalOpen = false;
-      player_level_won.visible = true;
-      player_level_won.play(PLAYER_LEVEL_WON, true);
-      player.visible = false;
-      break;
-    case Game_State.LEVEL_TRANSITION:
-      break;
-    default:
-      break;
+  else {
+    switch (game_state) {
+      case Game_State.INTRO:
+        game_state = Game_State.LEVEL_INTRO;
+        glow1.visible = glow2.visible =
+          splash.visible = start_button.visible = false;
+        startLevel();
+        break;
+      case Game_State.LEVEL:
+        info_group.children.each(child => {
+          child.visible = true;
+        });
+        portal_open.visible = false;
+        renderBlocks();
+        get_ready.visible = levelText.visible =
+          levelCode.visible = level_complete.visible =
+          startText.visible = false;
+        portalOpen = false;
+        player_level_won.visible = true;
+        console.log('bump level level');
+        player_level_won.play(PLAYER_LEVEL_WON, true);
+        player.visible = false;
+        break;
+      case Game_State.LEVEL_TRANSITION:
+        break;
+      default:
+        break;
+    }
   }
 }
 
 function spawnObjects() {
-  capsule.setPosition(levelData.capsule_position.x, levelData.capsule_position.y);
-  player.setPosition(levelData.player_position.x, levelData.player_position.y);
-  console.log(levelData.rock_position);
-  portal.setPosition(levelData.portal_position.x, levelData.portal_position.y);
-  if (levelData.rock_position.x != 0 && levelData.rock_position.y != 0) {
-    var rock = _scene.matter.add.sprite(levelData.rock_position.x * BLOCK_SIZE, levelData.rock_position.y * BLOCK_SIZE, 'rock')
-      .setScale(1.4)
-      .setOrigin(0.5)
-      .setBounce(0.4)
-      .setCircle(22)
-      .setDensity(.005)
-      .setIgnoreGravity(false);
-    rock.body.label = 'rock';
-    rock.setPosition(levelData.rock_position.x, levelData.rock_position.y);
-  }
+  var blockX = BLOCK_SIZE / 2;
+  var blockY = BLOCK_SIZE / 2;
+  capsule.setPosition(levelData.capsule_position.x * BLOCK_SIZE + blockX, levelData.capsule_position.y * BLOCK_SIZE + blockY);
+  player.setPosition(levelData.player_position.x * BLOCK_SIZE + blockX, levelData.player_position.y * BLOCK_SIZE + blockY);
+  portal.setPosition(levelData.portal_position.x * BLOCK_SIZE + blockX, levelData.portal_position.y * BLOCK_SIZE + blockY + 2);
+  portal_open.setPosition(levelData.portal_position.x * BLOCK_SIZE + blockX, levelData.portal_position.y * BLOCK_SIZE + blockY + 2);
+  player_level_won.setPosition(0, 0);
+  levelData.rock_position.forEach(rock => {
+    if (rock.x != 0 && rock.y != 0) {
+      var newRock = _scene.matter.add.sprite(rock.x * BLOCK_SIZE, rock.y * BLOCK_SIZE, 'rock')
+        .setScale(1.4)
+        .setOrigin(0.5)
+        .setBounce(0.4)
+        .setCircle(22)
+        .setDensity(.005)
+        .setIgnoreGravity(false);
+      newRock.body.label = 'rock';
+      rocks.add(newRock);
+    }
+  });
+  // portalOpen = false;
+  capsule.visible = player.visible = portal.visible = true;
 }
 function showGlowEffect() {
   const glow_scale = game_state == Game_State.INTRO ? 3 : 1;
