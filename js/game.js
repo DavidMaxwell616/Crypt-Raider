@@ -39,11 +39,11 @@ function startLevel(scene) {
       start_button = _scene.add.image(config.width / 2, config.height * .8, 'start button').setOrigin(0.5).setScale(2.5);
       start_button
         .setInteractive()
-        .on('pointerdown', () => bumpLevel(false));
+        .on('pointerdown', () => bumpLevel());
       level_complete = _scene.add.image(config.width / 2, config.height * .75, 'level complete').setOrigin(0.5).setScale(1.5);
       level_complete
         .setInteractive()
-        .on('pointerdown', () => bumpLevel(true))
+        .on('pointerdown', () => { game_state = Game_State.LEVEL; bumpLevel(); })
         .visible = false;
       rocks = _scene.add.group();
       break;
@@ -222,9 +222,11 @@ function startLevel(scene) {
           openPortal();
         }
         else if ((portalOpen && bodyA.label == "player" && bodyB.label == "portal") || (bodyB.label == "portal" && bodyA.label == "player")) {
-          bumpLevel(false);
+          portalOpen = false;
           player_level_won.visible = true;
           player_level_won.setPosition(player.x, player.y);
+          player_level_won.play(PLAYER_LEVEL_WON, true);
+          player.visible = false;
         }
         else if ((!portalOpen && bodyA.label == "player" && bodyB.label == "Rectangle Body") || (bodyB.label == "Rectangle Body" && bodyA.label == "player")) {
           if (BLOCK_TYPES[bodyB.gameObject.frame.name] === 'sand') {
@@ -251,14 +253,13 @@ function clearLevel() {
     child.visible = false;
   });
   portal.visible =
-    levelText.visible = backgroundImage.visible = false;
+    levelText.visible = backgroundImage.visible = portal_open.visible = false;
   splash.visible = true;
   glow1.visible = glow2.visible =
     level_complete.visible = true;
   glow1.scale = glow2.scale = splash.scale = .75;
   splash.y = glow1.y = glow2.y -= 40;
-  game_state = Game_State.LEVEL_TRANSITION;
-  portalOpen = false;
+  game_state = Game_State.INTERMISSION;
 }
 
 function renderBlocks() {
@@ -272,7 +273,6 @@ function renderBlocks() {
         .setFrame(block)
         .setStatic(true)
         .setIgnoreGravity(true);
-      element.visible = false;
       blocks.add(element);
     }
     blockX += BLOCK_SIZE;
@@ -290,46 +290,38 @@ function openPortal() {
   portal_open.visible = true;
 }
 
-function bumpLevel(bumpState) {
-  if (bumpState) {
-    glow1.visible = glow2.visible = player_level_intro.visible =
-      splash.visible = start_button.visible = false;
-    level++;
-    game_state = Game_State.LEVEL;
-    levelData = objectData['level_' + level][0];
 
-    spawnObjects();
-  }
-  else {
-    switch (game_state) {
-      case Game_State.INTRO:
-        game_state = Game_State.LEVEL_INTRO;
-        glow1.visible = glow2.visible =
-          splash.visible = start_button.visible = false;
-        startLevel();
-        break;
-      case Game_State.LEVEL:
-        info_group.children.each(child => {
-          child.visible = true;
-        });
-        portal_open.visible = false;
-        renderBlocks();
-        get_ready.visible = levelText.visible =
-          levelCode.visible = level_complete.visible =
-          startText.visible = false;
-        portalOpen = false;
-        player_level_won.visible = true;
-        console.log('bump level level');
-        player_level_won.play(PLAYER_LEVEL_WON, true);
-        player.visible = false;
-        break;
-      case Game_State.LEVEL_TRANSITION:
-        break;
-      default:
-        break;
-    }
+function bumpLevel() {
+  switch (game_state) {
+    case Game_State.INTRO:
+      game_state = Game_State.LEVEL_INTRO;
+      glow1.visible = glow2.visible =
+        splash.visible = start_button.visible = false;
+      startLevel();
+      break;
+    case Game_State.LEVEL:
+      glow1.visible = glow2.visible = player_level_intro.visible =
+        splash.visible = start_button.visible = false;
+      level++;
+      game_state = Game_State.LEVEL;
+      levelData = objectData['level_' + level][0];
+      spawnObjects();
+      info_group.children.each(child => {
+        child.visible = true;
+      });
+      renderBlocks();
+      get_ready.visible = levelText.visible =
+        levelCode.visible = level_complete.visible =
+        startText.visible = false;
+
+      break;
+    case Game_State.INTERMISSION:
+      break;
+    default:
+      break;
   }
 }
+
 
 function spawnObjects() {
   var blockX = BLOCK_SIZE / 2;
@@ -372,7 +364,7 @@ function showGlowEffect() {
 function update() {
   switch (game_state) {
     case Game_State.INTRO:
-    case Game_State.LEVEL_TRANSITION:
+    case Game_State.INTERMISSION:
       showGlowEffect();
       break;
     case Game_State.LEVEL:

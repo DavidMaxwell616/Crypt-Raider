@@ -2,7 +2,7 @@ const Game_State = {
   INTRO: 0,
   LEVEL_INTRO: 1,
   LEVEL: 2,
-  LEVEL_TRANSITION: 3,
+  INTERMISSION: 3,
   GAME_OVER: 4
 };
 const BLOCK_SIZE = 50;
@@ -41,6 +41,7 @@ var player_level_intro;
 var info_group;
 var level_complete;
 var rocks;
+var player;
 
 const PLAYER_LEVEL_INTRO = 'player level intro';
 const PLAYER_LEVEL_WON = 'player level won';
