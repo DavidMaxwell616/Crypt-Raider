@@ -248,7 +248,11 @@ function clearLevel() {
   blocks.children.each(block => {
     block.destroy();
     _scene.matter.world.remove(block);
-  })
+  });
+  rocks.children.each(rock => {
+    rock.destroy();
+    _scene.matter.world.remove(rock);
+  });
   info_group.children.each(child => {
     child.visible = false;
   });

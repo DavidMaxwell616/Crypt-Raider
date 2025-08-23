@@ -25,7 +25,7 @@ var rocks;
 var score = 0;
 var objectData;
 var levelData;
-//var platforms;
+
 var map;
 var layer;
 var tileset;
