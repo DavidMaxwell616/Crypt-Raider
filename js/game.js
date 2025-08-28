@@ -46,6 +46,9 @@ function startLevel(scene) {
         .on('pointerdown', () => { game_state = Game_State.LEVEL; bumpLevel(); })
         .visible = false;
       rocks = _scene.add.group();
+      locusts = _scene.add.group();
+      mummies = _scene.add.group();
+      doors = _scene.add.group();
       break;
     case Game_State.LEVEL_INTRO:
       info_group = _scene.add.group();
@@ -120,18 +123,16 @@ function startLevel(scene) {
         startText.visible = false;
       levelData = objectData['level_' + level][0];
       player = _scene.matter.add.sprite(0, 0, 'player')
-        .setScale(1.4)
+        .setScale(SPRITE_SCALE)
         .setOrigin(.5)
         .setDensity(5)
         .setFixedRotation(true)
         .setIgnoreGravity(true);
       player.body.label = 'player';
       capsule = _scene.matter.add.sprite(0, 0, 'capsule')
-        .setScale(1.4)
+        .setScale(SPRITE_SCALE)
         .setOrigin(0.5)
-        .setBounce(0.4)
         .setCircle(22)
-        .setDensity(.005)
         .setIgnoreGravity(false);
       capsule.body.label = 'capsule';
       portal_open = _scene.matter.add.sprite(0, 0, 'portal open')
@@ -235,6 +236,16 @@ function startLevel(scene) {
             bodyB.destroy();
           }
         }
+        if (bodyA.label == 'locust' && bodyB.label == 'Rectangle Body') {
+          bodyA.velocity.y *= -1;
+          bodyA.velocity.x = 0;
+          console.log(bodyA.velocity);
+        }
+        // if (bodyB.label == 'locust' && bodyA.label == 'Rectangle Body') {
+        //   bodyB.velocity.y *= -1;
+        //   bodyB.velocity.x *= -1;
+        // }
+
       });
       break;
     default:
@@ -338,7 +349,7 @@ function spawnObjects() {
   levelData.rock_position.forEach(rock => {
     if (rock.x != 0 && rock.y != 0) {
       var newRock = _scene.matter.add.sprite(rock.x * BLOCK_SIZE, rock.y * BLOCK_SIZE, 'rock')
-        .setScale(1.4)
+        .setScale(SPRITE_SCALE)
         .setOrigin(0.5)
         .setBounce(0.4)
         .setCircle(22)
@@ -348,7 +359,31 @@ function spawnObjects() {
       rocks.add(newRock);
     }
   });
-  // portalOpen = false;
+  levelData.locust_position.forEach(locust => {
+    if (locust.x != 0 && locust.y != 0) {
+      var newLocust = _scene.matter.add.sprite(locust.x * BLOCK_SIZE, locust.y * BLOCK_SIZE, 'locust')
+        .setScale(SPRITE_SCALE)
+        .setOrigin(0.5)
+        .setRectangle(36, 36, 36, 36)
+        .setIgnoreGravity(true);
+      newLocust.body.label = 'locust';
+      newLocust.setVelocity(locust.xv, locust.yv);
+      locusts.add(newLocust);
+    }
+  });
+  levelData.door_position.forEach(door => {
+    if (door.x != 0 && door.y != 0) {
+      var newDoor = _scene.matter.add.sprite(door.x * BLOCK_SIZE, door.y * BLOCK_SIZE, 'door')
+        .setScale(SPRITE_SCALE)
+        .setOrigin(0.5)
+        .setBounce(0.4)
+        .setRectangle(32)
+        .setDensity(.005)
+        .setIgnoreGravity(true);
+      newDoor.body.label = 'door';
+      doors.add(newDoor);
+    }
+  });
   capsule.visible = player.visible = portal.visible = true;
 }
 function showGlowEffect() {
@@ -399,7 +434,9 @@ function update() {
         player.y += 0;
         player.play('idle', true);
       };
-
+      locusts.children.each(locust => {
+        locust.body.angularVelocity = 0;
+      });
     default:
       break;
   }

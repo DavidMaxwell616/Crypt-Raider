@@ -41,10 +41,14 @@ var player_level_intro;
 var info_group;
 var level_complete;
 var rocks;
+var locusts;
+var mummies;
+var doors;
 var player;
 
 const PLAYER_LEVEL_INTRO = 'player level intro';
 const PLAYER_LEVEL_WON = 'player level won';
+const SPRITE_SCALE = 1.4;
 const BLOCK_TYPES =
 {
   1: 'rock',

@@ -19,7 +19,8 @@
     "portal_position": {"x": 9,"y":12},
     "rock_position": [{"x": 0,"y":0}], 
     "mummy_position": [{"x": 0,"y":0}], 
-    "locust_position": [{"x": 0,"y":0}] 
+    "locust_position": [{"x": 0,"y":0}], 
+    "door_position": [{"x": 0,"y":0}] 
     }
   ],
   "level_2": [{
@@ -42,7 +43,8 @@
     "portal_position": {"x": 13,"y":8},
     "rock_position": [{"x": 8,"y":4}], 
     "mummy_position": [{"x": 0,"y":0}], 
-    "locust_position": [{"x": 0,"y":0}] 
+    "locust_position": [{"x": 0,"y":0}], 
+    "door_position": [{"x": 0,"y":0}]  
     }
   ],
   "level_3": [{
@@ -65,7 +67,8 @@
     "portal_position": {"x": 16,"y":3},
     "rock_position": [{"x": 8,"y":2}], 
     "mummy_position": [{"x": 0,"y":0}], 
-    "locust_position": [{"x": 0,"y":0}] 
+    "locust_position": [{"x": 10,"y":10,"xv": 0,"yv":1}], 
+    "door_position": [{"x": 13,"y":3}]  
     }
   ],
   "level_4": [{
@@ -88,7 +91,8 @@
     "portal_position": {"x": 9,"y":12},
     "rock_position": [{"x": 0,"y":0}], 
     "mummy_position": [{"x": 0,"y":0}], 
-    "locust_position": [{"x": 0,"y":0}] 
+    "locust_position": [{"x": 0,"y":0}], 
+    "door_position": [{"x": 0,"y":0}]   
     }
   ],
   "level_5": [{
@@ -111,7 +115,8 @@
     "portal_position": {"x": 9,"y":12},
     "rock_position": [{"x": 0,"y":0}], 
     "mummy_position": [{"x": 0,"y":0}], 
-    "locust_position": [{"x": 0,"y":0}] 
+    "locust_position": [{"x": 0,"y":0}], 
+    "door_position": [{"x": 0,"y":0}]   
     }
   ],
   "level_6": [{
@@ -134,7 +139,8 @@
     "portal_position": {"x": 9,"y":12},
     "rock_position": [{"x": 0,"y":0}], 
     "mummy_position": [{"x": 0,"y":0}], 
-    "locust_position": [{"x": 0,"y":0}] 
+    "locust_position": [{"x": 0,"y":0}], 
+    "door_position": [{"x": 0,"y":0}]   
     }
   ]
 }

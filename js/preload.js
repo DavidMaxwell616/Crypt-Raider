@@ -8,8 +8,12 @@ function preload() {
   this.load.image('start button', 'assets/images/start button.png');
   this.load.image('level complete', 'assets/images/level complete.png');
   this.load.image('portal', 'assets/images/portal.png');
+  this.load.spritesheet('door', 'assets/spritesheets/door.png',
+    { frameWidth: 32, frameHeight: 32 });
   this.load.spritesheet('rock', 'assets/spritesheets/rock.png',
     { frameWidth: 57, frameHeight: 32 });
+  this.load.spritesheet('locust', 'assets/spritesheets/locust.png',
+    { frameWidth: 29, frameHeight: 32 });
   this.load.spritesheet('portal open', 'assets/spritesheets/portal open.png',
     { frameWidth: 64, frameHeight: 60 });
   this.load.spritesheet('player level won', 'assets/spritesheets/player level won.png',
