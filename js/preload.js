@@ -1,5 +1,5 @@
 function preload() {
-  this.load.image('splash', 'assets/images/crypt raider title.png');
+  this.load.image('splash', 'assets/images/crypt raider title.svg');
   this.load.image('glow', 'assets/images/glow.png');
   this.load.image('level intro', 'assets/images/get ready.png');
   this.load.image('background', 'assets/images/background.png');
@@ -13,7 +13,7 @@ function preload() {
   this.load.spritesheet('rock', 'assets/spritesheets/rock.png',
     { frameWidth: 57, frameHeight: 32 });
   this.load.spritesheet('locust', 'assets/spritesheets/locust.png',
-    { frameWidth: 29, frameHeight: 32 });
+    { frameWidth: 32, frameHeight: 32 });
   this.load.spritesheet('portal open', 'assets/spritesheets/portal open.png',
     { frameWidth: 64, frameHeight: 60 });
   this.load.spritesheet('player level won', 'assets/spritesheets/player level won.png',
@@ -22,6 +22,8 @@ function preload() {
     { frameWidth: 27, frameHeight: 32 });
   this.load.spritesheet('capsule', 'assets/spritesheets/capsule.png',
     { frameWidth: 32, frameHeight: 32 });
+  this.load.spritesheet('explosion', 'assets/spritesheets/explosion.png',
+    { frameWidth: 98, frameHeight: 98 });
   this.load.spritesheet(PLAYER_LEVEL_INTRO, 'assets/spritesheets/player_intro.png',
     { frameWidth: 87, frameHeight: 95 });
   this.load.path = '../assets/json/';

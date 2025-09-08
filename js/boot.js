@@ -45,7 +45,9 @@ var locusts;
 var mummies;
 var doors;
 var player;
+var explosion;
 
+const PLAYER_SPEED = 2;
 const PLAYER_LEVEL_INTRO = 'player level intro';
 const PLAYER_LEVEL_WON = 'player level won';
 const SPRITE_SCALE = 1.4;

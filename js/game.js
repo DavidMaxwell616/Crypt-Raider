@@ -149,6 +149,21 @@ function startLevel(scene) {
       });
       portal_open.visible = false;
       portal_open.play('portal open', true);
+
+      explosion = _scene.matter.add.sprite(0, 0, 'explosion')
+        .setScale(1.72)
+        .setOrigin(0.5)
+        .setSensor(true)
+        .setStatic(true);
+      explosion.body.label = 'explosion';
+      _scene.anims.create({
+        key: 'explosion',
+        frames: _scene.anims.generateFrameNumbers('explosion'),
+        frameRate: 8,
+        repeat: 0
+      });
+      explosion.visible = false;
+
       portal = _scene.matter.add.sprite(0, 0, 'portal')
         .setScale(1.72)
         .setOrigin(0.5)
@@ -231,21 +246,37 @@ function startLevel(scene) {
         }
         else if ((!portalOpen && bodyA.label == "player" && bodyB.label == "Rectangle Body") || (bodyB.label == "Rectangle Body" && bodyA.label == "player")) {
           if (BLOCK_TYPES[bodyB.gameObject.frame.name] === 'sand') {
-            const block = blocks.children.entries[bodyB.id - 22];
+            const sandOffset = blocks.children.entries.length / 5;
+            const block = blocks.children.entries[bodyB.id - sandOffset];
             block.visible = false;
             bodyB.destroy();
           }
         }
         if (bodyA.label == 'locust' && bodyB.label == 'Rectangle Body') {
-          bodyA.velocity.y *= -1;
-          bodyA.velocity.x = 0;
-          console.log(bodyA.velocity);
+          if (bodyA.velocity.y > 0 || bodyA.velocity.y < 0) {
+            bodyA.gameObject.setVelocityY(-bodyA.velocity.y);
+          }
+          if (bodyA.velocity.x > 0) {
+            bodyA.gameObject.setVelocityX(-bodyA.velocity.x);
+          }
+        }
+        if (bodyA.label == 'rock' && bodyB.label == 'locust' ||
+          bodyB.label == 'rock' && bodyA.label == 'locust') {
+          explosion.setPosition(bodyA.position.x, bodyA.position.y);
+
+          rocks.children.entries[0].visible = false;
+          locusts.children.entries[0].visible = false;
+          bodyB.visible = false;
+          bodyA.destroy();
+          _scene.matter.world.remove(bodyA);
+          bodyB.destroy();
+          _scene.matter.world.remove(bodyB);
+          explosion.visible = true;
         }
         // if (bodyB.label == 'locust' && bodyA.label == 'Rectangle Body') {
         //   bodyB.velocity.y *= -1;
         //   bodyB.velocity.x *= -1;
         // }
-
       });
       break;
     default:
@@ -361,13 +392,16 @@ function spawnObjects() {
   });
   levelData.locust_position.forEach(locust => {
     if (locust.x != 0 && locust.y != 0) {
-      var newLocust = _scene.matter.add.sprite(locust.x * BLOCK_SIZE, locust.y * BLOCK_SIZE, 'locust')
+      var newLocust = _scene.matter.add.sprite((locust.x * BLOCK_SIZE) - 29, locust.y * BLOCK_SIZE, 'locust')
         .setScale(SPRITE_SCALE)
         .setOrigin(0.5)
-        .setRectangle(36, 36, 36, 36)
-        .setIgnoreGravity(true);
+        .setRectangle(32, 32, 32, 32)
+        .setFixedRotation(true)
+        .setIgnoreGravity(true)
+        .setFriction(0, 0, 0);
       newLocust.body.label = 'locust';
-      newLocust.setVelocity(locust.xv, locust.yv);
+      newLocust.setVelocityX(locust.xv);
+      newLocust.setVelocityY(locust.yv);
       locusts.add(newLocust);
     }
   });
@@ -408,25 +442,25 @@ function update() {
       break;
     case Game_State.LEVEL:
       if (cursors.left.isDown) {
-        player.x += -1;
+        player.x += -PLAYER_SPEED;
         player.y += 0;
         player.setFlipX(true);
         player.play('walk', true);
       }
       else if (cursors.right.isDown) {
-        player.x += 1;
+        player.x += PLAYER_SPEED;
         player.y += 0;
         player.setFlipX(false);
         player.play('walk', true);
       }
       else if (cursors.up.isDown) {
         player.x += 0;
-        player.y -= 1;
+        player.y -= PLAYER_SPEED;
         player.play('walk_up', true);
       }
       else if (cursors.down.isDown) {
         player.x += 0;
-        player.y += 1;
+        player.y += PLAYER_SPEED;
         player.play('walk_down', true);
       }
       else {
@@ -435,7 +469,7 @@ function update() {
         player.play('idle', true);
       };
       locusts.children.each(locust => {
-        locust.body.angularVelocity = 0;
+        //console.log(locust.body.velocity.x, locust.body.velocity.y);
       });
     default:
       break;
