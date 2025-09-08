@@ -22,9 +22,12 @@ var level = 3;
 var get_ready;
 var backgroundImage;
 var rocks;
+var key;
 var score = 0;
 var objectData;
 var levelData;
+var door;
+var player_has_key = false;
 
 var map;
 var layer;
@@ -43,7 +46,6 @@ var level_complete;
 var rocks;
 var locusts;
 var mummies;
-var doors;
 var player;
 var explosion;
 
