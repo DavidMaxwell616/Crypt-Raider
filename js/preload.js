@@ -14,6 +14,8 @@ function preload() {
     { frameWidth: 57, frameHeight: 32 });
   this.load.spritesheet('locust', 'assets/spritesheets/locust.png',
     { frameWidth: 32, frameHeight: 32 });
+  this.load.spritesheet('mummy', 'assets/spritesheets/mummy.png',
+    { frameWidth: 32, frameHeight: 32 });
   this.load.spritesheet('portal open', 'assets/spritesheets/portal open.png',
     { frameWidth: 64, frameHeight: 60 });
   this.load.spritesheet('player level won', 'assets/spritesheets/player level won.png',

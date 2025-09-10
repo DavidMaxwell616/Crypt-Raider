@@ -443,6 +443,21 @@ function spawnObjects() {
       locusts.add(newLocust);
     }
   });
+  levelData.mummy_position.forEach(mummy => {
+    if (mummy.x != 0 && mummy.y != 0) {
+      var newMummy = _scene.matter.add.sprite((mummy.x * BLOCK_SIZE) - 29, mummy.y * BLOCK_SIZE, 'mummy')
+        .setScale(SPRITE_SCALE)
+        .setOrigin(0.5)
+        .setRectangle(32, 32, 32, 32)
+        .setFixedRotation(true)
+        .setIgnoreGravity(true)
+        .setFriction(0, 0, 0);
+      newMummy.body.label = 'mummy';
+      newMummy.setVelocityX(mummy.xv);
+      newMummy.setVelocityY(mummy.yv);
+      mummies.add(newMummy);
+    }
+  });
   if (levelData.door_position.x != 0 && levelData.door_position.y != 0) {
     door = _scene.matter.add.sprite(levelData.door_position.x * BLOCK_SIZE, levelData.door_position.y * BLOCK_SIZE, 'door')
       .setScale(SPRITE_SCALE)
