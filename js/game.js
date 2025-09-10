@@ -239,24 +239,23 @@ function startLevel(scene) {
       capsule.play('capsule', true);
       cursors = _scene.input.keyboard.createCursorKeys();
       renderBlocks();
+      portalOpen = false;
 
       _scene.matter.world.on("collisionstart", (event, bodyA, bodyB) => {
-        console.log(bodyA.label, bodyB.label);
-
-        if ((!portalOpen && bodyA.label == "capsule" && bodyB.label == "portal") || (bodyB.label == "portal" && bodyA.label == "capsule")) {
+        if (!portalOpen && (bodyA.label == "capsule" && bodyB.label == "portal") || !portalOpen && (bodyB.label == "portal" && bodyA.label == "capsule")) {
           openPortal();
         }
-        else if ((portalOpen && bodyA.label == "player" && bodyB.label == "portal") || (bodyB.label == "portal" && bodyA.label == "player")) {
+        else if (portalOpen && (bodyA.label == "player" && bodyB.label == "portal") || portalOpen && (bodyB.label == "portal" && bodyA.label == "player")) {
           portalOpen = false;
           player_level_won.visible = true;
           player_level_won.setPosition(player.x, player.y);
           player_level_won.play(PLAYER_LEVEL_WON, true);
           player.visible = false;
         }
-        else if ((!portalOpen && bodyA.label == "player" && bodyB.label == "Rectangle Body") || (bodyB.label == "Rectangle Body" && bodyA.label == "player")) {
+        if ((bodyA.label == "player" && bodyB.label == "Rectangle Body") || (bodyB.label == "Rectangle Body" && bodyA.label == "player")) {
           if (BLOCK_TYPES[bodyB.gameObject.frame.name] === 'sand') {
             const sandOffset = blocks.children.entries.length / 5;
-            const block = blocks.children.entries[bodyB.id - sandOffset];
+            const block = blocks.children.entries[bodyB.id - 28];
             block.visible = false;
             bodyB.destroy();
           }
@@ -272,7 +271,6 @@ function startLevel(scene) {
         if (bodyA.label == 'rock' && bodyB.label == 'locust' ||
           bodyB.label == 'rock' && bodyA.label == 'locust') {
           explosion.setPosition(bodyA.position.x, bodyA.position.y);
-
           rocks.children.entries[0].visible = false;
           locusts.children.entries[0].visible = false;
           bodyB.visible = false;
@@ -281,13 +279,21 @@ function startLevel(scene) {
           bodyB.destroy();
           _scene.matter.world.remove(bodyB);
           explosion.visible = true;
+          showExplosion();
           explosion.play('explosion', true);
         }
-        if (bodyA.label == 'explosion' && bodyB.label == 'Rectangle Body' ||
-          bodyB.label == 'Rectangle Body' && bodyA.label == 'explosion') {
+
+        if (!playerHasKey && (bodyA.label == "player" && bodyB.label == "key") || !playerHasKey && (bodyB.label == "player" && bodyA.label == "key")) {
+          playerHasKey = true;
+          const body = bodyA.label == "key" ? bodyA : bodyB;
+          key.visible = false;
+          body.destroy();
+          _scene.matter.world.remove(body);
         }
-
-
+        if (playerHasKey && (bodyA.label == "player" && bodyB.label == "door") || playerHasKey && (bodyB.label == "player" && bodyA.label == "door")) {
+          playerHasKey = false;
+          door.play("door", true);
+        }
         // if (bodyB.label == 'locust' && bodyA.label == 'Rectangle Body') {
         //   bodyB.velocity.y *= -1;
         //   bodyB.velocity.x *= -1;
@@ -297,6 +303,21 @@ function startLevel(scene) {
     default:
       break;
   }
+}
+
+function showExplosion() {
+  const exp = explosion.body.gameObject;
+  blocks.children.each(block => {
+    if (block.x > exp.x - (exp.width) &&
+      block.x < exp.x + (exp.width) &&
+      block.y > exp.y - (exp.height) &&
+      block.y < exp.y + (exp.height)) {
+      block.visible = false;
+      block.destroy();
+      _scene.matter.world.remove(block);
+    }
+  });
+
 }
 
 function clearLevel() {
@@ -426,11 +447,21 @@ function spawnObjects() {
     door = _scene.matter.add.sprite(levelData.door_position.x * BLOCK_SIZE, levelData.door_position.y * BLOCK_SIZE, 'door')
       .setScale(SPRITE_SCALE)
       .setOrigin(0.5)
-      .setBounce(0.4)
       .setRectangle(32)
-      .setDensity(.005)
+      .setStatic(true)
       .setIgnoreGravity(true);
     door.body.label = 'door';
+    _scene.anims.create({
+      key: "door",
+      frames: _scene.anims.generateFrameNumbers("door"),
+      frameRate: 16,
+      repeat: 0
+    });
+    door.on('animationcomplete', function (animation, frame) {
+      door.visible = false;
+      door.destroy();
+      _scene.matter.world.remove(door);
+    });
   };
   capsule.visible = player.visible = portal.visible = true;
 }

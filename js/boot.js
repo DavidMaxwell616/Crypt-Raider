@@ -27,7 +27,7 @@ var score = 0;
 var objectData;
 var levelData;
 var door;
-var player_has_key = false;
+var playerHasKey = false;
 
 var map;
 var layer;
