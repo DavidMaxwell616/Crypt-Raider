@@ -18,7 +18,7 @@ var glow1_grow = .05;
 var glow2_grow = .01;
 var start_button;
 var start_button2;
-var level = 3;
+var level = 4;
 var get_ready;
 var backgroundImage;
 var rocks;
