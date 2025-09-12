@@ -14,9 +14,9 @@
          9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,
          10,9,10,9,9,12,10,13,11,0,15,15,15,11,10,9,9,11
       ],
-    "capsule_position": {"x": 6,"y":3}, 
-    "player_position": {"x": 13,"y":3}, 
-    "portal_position": {"x": 9,"y":12},
+    "capsule_position": [{"x": 6,"y":3}], 
+    "player_position": {"x": 13,"y":4}, 
+    "portal_position": {"x": 10,"y":13},
     "rock_position": [{"x": 0,"y":0}], 
     "mummy_position": [{"x": 0,"y":0}], 
     "locust_position": [{"x": 0,"y":0}], 
@@ -39,7 +39,7 @@
          9,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,9,
          10,9,14,9,9,12,15,13,11,14,15,15,15,11,15,9,9,11
       ],
-    "capsule_position": {"x": 5,"y":7}, 
+    "capsule_position": [{"x": 5,"y":7}], 
     "player_position": {"x": 2,"y":3}, 
     "portal_position": {"x": 13,"y":8},
     "rock_position": [{"x": 8,"y":4}], 
@@ -64,7 +64,7 @@
         10,6,5,6,4,6,5,7,4,0,2,0,0,0,0,0,0,10,
         10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10
       ],
-    "capsule_position": {"x": 14,"y":2}, 
+    "capsule_position": [{"x": 14,"y":2}], 
     "player_position": {"x": 6,"y":6}, 
     "portal_position": {"x": 16,"y":3},
     "rock_position": [{"x": 8,"y":2}], 
@@ -87,16 +87,16 @@
         9,0,0,0,0,9,0,0,0,0,0,9,0,0,0,9,0,9,
         9,0,0,0,0,9,0,0,0,0,0,9,0,0,0,9,0,9,
         9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,9,
-        9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9
+        9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,0,9
       ],
-    "capsule_position": {"x": 16,"y":2}, 
-    "player_position": {"x": 13,"y":3}, 
-    "portal_position": {"x": 9,"y":12},
+    "capsule_position": [{"x": 17,"y":3}], 
+    "player_position": {"x": 3,"y":7}, 
+    "portal_position": {"x": 17,"y":13},
     "rock_position": [{"x": 0,"y":0}], 
     "mummy_position": [{"x": 9,"y":8,"xv": 0,"yv":1}], 
     "locust_position": [{"x": 0,"y":0}], 
-    "door_position": {"x": 16,"y":3},
-    "key_position": {"x":8,"y":6}    
+    "door_position": {"x": 17,"y":4},
+    "key_position": {"x":9,"y":7}    
     }
   ],
   "level_5": [{
@@ -114,7 +114,7 @@
         11,0,0,0,0,0,0,0,0,0,0,11,2,2,2,2,2,11,
         11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11
       ],
-    "capsule_position": {"x": 6,"y":3}, 
+    "capsule_position": [{"x": 6,"y":3}], 
     "player_position": {"x": 13,"y":3}, 
     "portal_position": {"x": 9,"y":12},
     "rock_position": [{"x": 0,"y":0}], 
@@ -139,7 +139,7 @@
         11,0,0,0,0,0,0,1,5,5,5,5,5,5,5,5,5,11,
         11,11,11,11,11,11,11,9,11,11,11,11,11,11,11,11,11,11
       ],
-    "capsule_position": {"x": 6,"y":3}, 
+    "capsule_position": [{"x": 6,"y":3}], 
     "player_position": {"x": 13,"y":3}, 
     "portal_position": {"x": 9,"y":12},
     "rock_position": [{"x": 0,"y":0}], 
@@ -164,7 +164,7 @@
         11,0,0,0,0,0,0,1,5,5,5,5,5,5,5,5,5,11,
         11,11,11,11,11,11,11,9,11,11,11,11,11,11,11,11,11,11
       ],
-    "capsule_position": {"x": 6,"y":3}, 
+    "capsule_position": [{"x": 6,"y":3}], 
     "player_position": {"x": 13,"y":3}, 
     "portal_position": {"x": 9,"y":12},
     "rock_position": [{"x": 0,"y":0}], 
@@ -189,7 +189,7 @@
         11,0,0,0,0,0,0,1,5,5,5,5,5,5,5,5,5,11,
         11,11,11,11,11,11,11,9,11,11,11,11,11,11,11,11,11,11
       ],
-    "capsule_position": {"x": 6,"y":3}, 
+    "capsule_position": [{"x": 6,"y":3}], 
     "player_position": {"x": 13,"y":3}, 
     "portal_position": {"x": 9,"y":12},
     "rock_position": [{"x": 0,"y":0}], 
@@ -214,7 +214,7 @@
         11,0,0,0,0,0,0,1,5,5,5,5,5,5,5,5,5,11,
         11,11,11,11,11,11,11,9,11,11,11,11,11,11,11,11,11,11
       ],
-    "capsule_position": {"x": 6,"y":3}, 
+    "capsule_position": [{"x": 6,"y":3}], 
     "player_position": {"x": 13,"y":3}, 
     "portal_position": {"x": 9,"y":12},
     "rock_position": [{"x": 0,"y":0}], 
@@ -239,7 +239,7 @@
         11,0,0,0,0,0,0,1,5,5,5,5,5,5,5,5,5,11,
         11,11,11,11,11,11,11,9,11,11,11,11,11,11,11,11,11,11
       ],
-    "capsule_position": {"x": 6,"y":3}, 
+    "capsule_position": [{"x": 6,"y":3}], 
     "player_position": {"x": 13,"y":3}, 
     "portal_position": {"x": 9,"y":12},
     "rock_position": [{"x": 0,"y":0}], 

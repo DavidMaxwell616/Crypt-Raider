@@ -6,6 +6,7 @@ const Game_State = {
   GAME_OVER: 4
 };
 const BLOCK_SIZE = 50;
+const SPRITE_SIZE = 25;
 const GAME_WIDTH = 900;
 const GAME_HEIGHT = 650;
 var blocks;
@@ -18,7 +19,7 @@ var glow1_grow = .05;
 var glow2_grow = .01;
 var start_button;
 var start_button2;
-var level = 4;
+var level = 1;
 var get_ready;
 var backgroundImage;
 var rocks;
@@ -27,7 +28,6 @@ var score = 0;
 var objectData;
 var levelData;
 var door;
-var playerHasKey = false;
 
 var map;
 var layer;
@@ -48,6 +48,7 @@ var locusts;
 var mummies;
 var player;
 var explosion;
+var capsules;
 
 const PLAYER_SPEED = 2;
 const PLAYER_LEVEL_INTRO = 'player level intro';
