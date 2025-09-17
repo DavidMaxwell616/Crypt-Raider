@@ -15,6 +15,7 @@
          10,9,10,9,9,12,10,13,11,0,15,15,15,11,10,9,9,11
       ],
     "capsule_position": [{"x": 6,"y":3}], 
+    "explosive_position": [{"x": 0,"y":0}], 
     "player_position": {"x": 13,"y":4}, 
     "portal_position": {"x": 10,"y":13},
     "rock_position": [{"x": 0,"y":0}], 
@@ -41,6 +42,7 @@
          10,9,14,9,9,12,15,13,11,14,15,15,15,11,15,9,9,11
       ],
     "capsule_position": [{"x": 6,"y":7}], 
+    "explosive_position": [{"x": 0,"y":0}], 
     "player_position": {"x": 3,"y": 4}, 
     "portal_position": {"x": 14,"y":9},
     "rock_position": [{"x": 8,"y":4}], 
@@ -67,6 +69,7 @@
         10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10
       ],
     "capsule_position": [{"x": 15,"y":2}], 
+    "explosive_position": [{"x": 0,"y":0}], 
     "player_position": {"x": 6,"y":6}, 
     "portal_position": {"x": 17,"y":4},
     "rock_position": [{"x": 8,"y":2}], 
@@ -92,6 +95,7 @@
         9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,0,9
       ],
     "capsule_position": [{"x": 17,"y":3}], 
+    "explosive_position": [{"x": 0,"y":0}], 
     "player_position": {"x": 3,"y":7}, 
     "portal_position": {"x": 17,"y":13},
     "rock_position": [{"x": 0,"y":0}], 
@@ -114,11 +118,12 @@
         11,2,2,2,2,2,2,0,6,6,0,9,9,9,0,0,0,11,
         11,2,2,2,2,2,2,0,6,6,0,0,0,0,0,0,0,11,
         11,0,0,0,0,0,0,0,0,0,0,11,2,2,2,2,2,11,
-        11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11
+        11,11,11,11,11,11,11,11,11,11,0,11,11,11,11,11,11,11
       ],
-    "capsule_position": [{"x": 6,"y":3}], 
-    "player_position": {"x": 13,"y":3}, 
-    "portal_position": {"x": 9,"y":12},
+    "capsule_position": [{"x": 14,"y":8},{"x": 12,"y":9}], 
+    "explosive_position": [{"x": 10,"y":5},{"x": 8,"y":5},{"x": 6,"y":5}], 
+    "player_position": {"x": 13,"y":5}, 
+    "portal_position": {"x": 11,"y":13},
     "rock_position": [{"x": 0,"y":0}], 
     "mummy_position": [{"x": 0,"y":0}], 
     "locust_position": [{"x": 0,"y":0}], 
@@ -142,6 +147,7 @@
         11,11,11,11,11,11,11,9,11,11,11,11,11,11,11,11,11,11
       ],
     "capsule_position": [{"x": 6,"y":3}], 
+    "explosive_position": [{"x": 0,"y":0}], 
     "player_position": {"x": 13,"y":3}, 
     "portal_position": {"x": 9,"y":12},
     "rock_position": [{"x": 0,"y":0}], 
@@ -167,6 +173,7 @@
         11,11,11,11,11,11,11,9,11,11,11,11,11,11,11,11,11,11
       ],
     "capsule_position": [{"x": 6,"y":3}], 
+    "explosive_position": [{"x": 0,"y":0}], 
     "player_position": {"x": 13,"y":3}, 
     "portal_position": {"x": 9,"y":12},
     "rock_position": [{"x": 0,"y":0}], 
@@ -192,6 +199,7 @@
         11,11,11,11,11,11,11,9,11,11,11,11,11,11,11,11,11,11
       ],
     "capsule_position": [{"x": 6,"y":3}], 
+    "explosive_position": [{"x": 0,"y":0}], 
     "player_position": {"x": 13,"y":3}, 
     "portal_position": {"x": 9,"y":12},
     "rock_position": [{"x": 0,"y":0}], 
@@ -217,6 +225,7 @@
         11,11,11,11,11,11,11,9,11,11,11,11,11,11,11,11,11,11
       ],
     "capsule_position": [{"x": 6,"y":3}], 
+    "explosive_position": [{"x": 0,"y":0}], 
     "player_position": {"x": 13,"y":3}, 
     "portal_position": {"x": 9,"y":12},
     "rock_position": [{"x": 0,"y":0}], 
@@ -242,6 +251,7 @@
         11,11,11,11,11,11,11,9,11,11,11,11,11,11,11,11,11,11
       ],
     "capsule_position": [{"x": 6,"y":3}], 
+    "explosive_position": [{"x": 0,"y":0}], 
     "player_position": {"x": 13,"y":3}, 
     "portal_position": {"x": 9,"y":12},
     "rock_position": [{"x": 0,"y":0}], 

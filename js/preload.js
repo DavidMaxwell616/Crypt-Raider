@@ -26,6 +26,8 @@ function preload() {
     { frameWidth: 32, frameHeight: 32 });
   this.load.spritesheet('explosion', 'assets/spritesheets/explosion.png',
     { frameWidth: 98, frameHeight: 98 });
+  this.load.spritesheet('explosive', 'assets/spritesheets/explosive.png',
+    { frameWidth: 58, frameHeight: 32 });
   this.load.spritesheet(PLAYER_LEVEL_INTRO, 'assets/spritesheets/player_intro.png',
     { frameWidth: 87, frameHeight: 95 });
   this.load.spritesheet('key', 'assets/spritesheets/key.png',

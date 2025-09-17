@@ -19,7 +19,7 @@ var glow1_grow = .05;
 var glow2_grow = .01;
 var start_button;
 var start_button2;
-var level = 2;
+var level = 5;
 var get_ready;
 var backgroundImage;
 var rocks;
@@ -49,6 +49,7 @@ var mummies;
 var player;
 var explosion;
 var capsules;
+var explosives;
 
 const PLAYER_SPEED = 2;
 const PLAYER_LEVEL_INTRO = 'player level intro';

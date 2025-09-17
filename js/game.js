@@ -49,6 +49,7 @@ function startLevel() {
       locusts = _scene.add.group();
       mummies = _scene.add.group();
       capsules = _scene.add.group();
+      explosives = _scene.add.group();
       break;
     case Game_State.LEVEL_INTRO:
       info_group = _scene.add.group();
@@ -250,7 +251,6 @@ function startLevel() {
         }
         if ((bodyA.label == "player" && bodyB.label == "Rectangle Body") || (bodyB.label == "Rectangle Body" && bodyA.label == "player")) {
           if (BLOCK_TYPES[bodyB.gameObject.frame.name] === 'sand') {
-            // block.visible = false;
             bodyB.gameObject.visible = false;
             bodyB.destroy();
           }
@@ -277,7 +277,6 @@ function startLevel() {
           showExplosion();
           explosion.play('explosion', true);
         }
-
         if ((bodyA.label == "player" && bodyB.label == "key") || (bodyB.label == "player" && bodyA.label == "key")) {
           const body = bodyA.label == "key" ? bodyA : bodyB;
           key.visible = false;
@@ -285,10 +284,7 @@ function startLevel() {
           _scene.matter.world.remove(body);
           door.play("door", true);
         }
-        // if (bodyB.label == 'locust' && bodyA.label == 'Rectangle Body') {
-        //   bodyB.velocity.y *= -1;
-        //   bodyB.velocity.x *= -1;
-        // }
+
       });
       break;
     default:
@@ -435,6 +431,19 @@ function spawnObjects() {
       newLocust.setVelocityX(locust.xv);
       newLocust.setVelocityY(locust.yv);
       locusts.add(newLocust);
+    }
+  });
+  levelData.explosive_position.forEach(bomb => {
+    if (bomb.x != 0 && bomb.y != 0) {
+      var newBomb = _scene.matter.add.sprite((bomb.x * BLOCK_SIZE - SPRITE_SIZE), bomb.y * BLOCK_SIZE - SPRITE_SIZE, 'explosive')
+        .setScale(SPRITE_SCALE)
+        .setOrigin(0.5)
+        .setRectangle(32, 32, 32, 32)
+        .setFixedRotation(true)
+        .setIgnoreGravity(false)
+        .setFriction(0, 0, 0);
+      newBomb.body.label = 'explosive';
+      explosives.add(newBomb);
     }
   });
   levelData.mummy_position.forEach(mummy => {
