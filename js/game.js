@@ -26,7 +26,7 @@ function create() {
   startLevel(this);
 }
 
-function startLevel(scene) {
+function startLevel() {
   _scene.matter.world.setBounds(0, 0, GAME_WIDTH, GAME_HEIGHT);
   switch (game_state) {
     case Game_State.INTRO:
@@ -239,7 +239,6 @@ function startLevel(scene) {
         if (!portalOpen && (bodyA.label == "capsule" && bodyB.label == "portal") ||
           !portalOpen && (bodyA.label == "portal" && bodyB.label == "capsule")) {
           const capsule = bodyA.label == "capsule" ? bodyA : bodyB;
-          console.log(capsule);
           openPortal(capsule);
         }
         else if (portalOpen && (bodyA.label == "player" && bodyB.label == "portal") || portalOpen && (bodyB.label == "portal" && bodyA.label == "player")) {
@@ -251,9 +250,8 @@ function startLevel(scene) {
         }
         if ((bodyA.label == "player" && bodyB.label == "Rectangle Body") || (bodyB.label == "Rectangle Body" && bodyA.label == "player")) {
           if (BLOCK_TYPES[bodyB.gameObject.frame.name] === 'sand') {
-            const sandOffset = blocks.children.entries.length / 5;
-            const block = blocks.children.entries[bodyB.id - 28];
-            block.visible = false;
+            // block.visible = false;
+            bodyB.gameObject.visible = false;
             bodyB.destroy();
           }
         }
@@ -335,6 +333,12 @@ function clearLevel() {
   glow1.scale = glow2.scale = splash.scale = .75;
   splash.y = glow1.y = glow2.y -= 40;
   game_state = Game_State.INTERMISSION;
+}
+
+function updateStats() {
+  info_group.children.entries[0].setText('LEVEL: ' + level);
+  info_group.children.entries[1].setText('SCORE: ' + score);
+  // livesText.setText('LIVES: ' + lives);
 }
 
 function renderBlocks() {
@@ -530,9 +534,7 @@ function update() {
         player.y += 0;
         player.play('idle', true);
       };
-      locusts.children.each(locust => {
-        //console.log(locust.body.velocity.x, locust.body.velocity.y);
-      });
+      updateStats();
     default:
       break;
   }
