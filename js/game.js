@@ -255,6 +255,20 @@ function startLevel() {
             bodyB.destroy();
           }
         }
+        if ((bodyA.label == "explosive" && bodyB.label == "Rectangle Body") || (bodyA.label == "explosive" && bodyB.label == "Rectangle Body")) {
+          if (bodyA.velocity.y > 3) {
+            explosion.setPosition(bodyA.position.x, bodyA.position.y);
+            bodyA.gameObject.visible = false;
+            bodyB.gameObject.visible = false;
+            bodyA.destroy();
+            _scene.matter.world.remove(bodyA);
+            bodyB.destroy();
+            _scene.matter.world.remove(bodyB);
+            explosion.visible = true;
+            showExplosion();
+            explosion.play('explosion', true);
+          }
+        }
         if (bodyA.label == 'locust' && bodyB.label == 'Rectangle Body') {
           if (bodyA.velocity.y > 0 || bodyA.velocity.y < 0) {
             bodyA.gameObject.setVelocityY(-bodyA.velocity.y);
@@ -284,7 +298,6 @@ function startLevel() {
           _scene.matter.world.remove(body);
           door.play("door", true);
         }
-
       });
       break;
     default:

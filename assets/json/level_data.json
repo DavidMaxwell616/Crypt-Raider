@@ -144,17 +144,17 @@
         11,0,2,2,2,2,2,10,2,2,0,0,0,0,0,0,0,11,
         11,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,11,
         11,0,0,0,0,0,0,1,5,5,5,5,5,5,5,5,5,11,
-        11,11,11,11,11,11,11,9,11,11,11,11,11,11,11,11,11,11
+        11,11,11,11,11,11,11,9,11,11,11,11,11,11,11,0,11,11
       ],
-    "capsule_position": [{"x": 6,"y":3}], 
-    "explosive_position": [{"x": 0,"y":0}], 
-    "player_position": {"x": 13,"y":3}, 
-    "portal_position": {"x": 9,"y":12},
-    "rock_position": [{"x": 0,"y":0}], 
+    "capsule_position": [{"x": 10,"y":3},{"x": 12,"y": 3}], 
+    "explosive_position": [{"x": 2,"y":11}], 
+    "player_position": {"x": 7,"y":3}, 
+    "portal_position": {"x": 16,"y":13},
+    "rock_position": [{"x": 3,"y":2},{"x": 2,"y":12}], 
     "mummy_position": [{"x": 0,"y":0}], 
     "locust_position": [{"x": 0,"y":0}], 
-    "door_position": {"x": 0,"y":0},
-    "key_position": {"x":0,"y":0}
+    "door_position": {"x": 13,"y":4},
+    "key_position": {"x":9,"y":9}
     }
   ],
     "level_7": [{
