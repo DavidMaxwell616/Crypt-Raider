@@ -269,6 +269,20 @@ function startLevel() {
             explosion.play('explosion', true);
           }
         }
+        if ((bodyA.label == "rock" && bodyB.label == "explosive") || (bodyA.label == "rock" && bodyB.label == "explosive")) {
+          if (bodyA.velocity.y > 3) {
+            explosion.setPosition(bodyA.position.x, bodyA.position.y);
+            bodyA.gameObject.visible = false;
+            bodyB.gameObject.visible = false;
+            bodyA.destroy();
+            _scene.matter.world.remove(bodyA);
+            bodyB.destroy();
+            _scene.matter.world.remove(bodyB);
+            explosion.visible = true;
+            showExplosion();
+            explosion.play('explosion', true);
+          }
+        }
         if (bodyA.label == 'locust' && bodyB.label == 'Rectangle Body') {
           if (bodyA.velocity.y > 0 || bodyA.velocity.y < 0) {
             bodyA.gameObject.setVelocityY(-bodyA.velocity.y);
