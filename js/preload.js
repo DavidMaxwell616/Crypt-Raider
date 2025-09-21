@@ -23,7 +23,7 @@ function preload() {
   this.load.spritesheet('player', 'assets/spritesheets/player.png',
     { frameWidth: 27, frameHeight: 32 });
   this.load.spritesheet('capsule', 'assets/spritesheets/capsule.png',
-    { frameWidth: 32, frameHeight: 32 });
+    { frameWidth: 130, frameHeight: 130 });
   this.load.spritesheet('explosion', 'assets/spritesheets/explosion.png',
     { frameWidth: 98, frameHeight: 98 });
   this.load.spritesheet('explosive', 'assets/spritesheets/explosive.png',
