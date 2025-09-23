@@ -99,7 +99,9 @@ function startLevel() {
         fontWeight: 'bold',
         color: 'white'
       });
-      start_button2 = _scene.add.sprite(BLOCK_SIZE * 7, BLOCK_SIZE * 8.1, 'capsule').setOrigin(0).setScale(2);
+      start_button2 = _scene.add.sprite(BLOCK_SIZE * 7, BLOCK_SIZE * 8.1, 'capsule')
+        .setOrigin(0)
+        .setScale(.4);
       start_button2
         .setInteractive()
         .on('pointerdown', () => { game_state = Game_State.LEVEL; startLevel(); });
@@ -240,7 +242,12 @@ function startLevel() {
         if (!portalOpen && (bodyA.label == "capsule" && bodyB.label == "portal") ||
           !portalOpen && (bodyA.label == "portal" && bodyB.label == "capsule")) {
           const capsule = bodyA.label == "capsule" ? bodyA : bodyB;
-          openPortal(capsule);
+          capsule.gameObject.visible = false;
+          capsule.destroy();
+          capsuleCount--;
+          if (capsuleCount == 0) {
+            openPortal();
+          }
         }
         else if (portalOpen && (bodyA.label == "player" && bodyB.label == "portal") || portalOpen && (bodyB.label == "portal" && bodyA.label == "player")) {
           portalOpen = false;
@@ -294,8 +301,8 @@ function startLevel() {
         if (bodyA.label == 'rock' && bodyB.label == 'locust' ||
           bodyB.label == 'rock' && bodyA.label == 'locust') {
           explosion.setPosition(bodyA.position.x, bodyA.position.y);
-          rocks.children.entries[0].visible = false;
-          locusts.children.entries[0].visible = false;
+          rocks.getChildren()[0].visible = false;
+          locusts.getChildren()[0].visible = false;
           bodyB.visible = false;
           bodyA.destroy();
           _scene.matter.world.remove(bodyA);
@@ -335,6 +342,7 @@ function showExplosion() {
 }
 
 function clearLevel() {
+  capsuleCount = 0;
   player_level_intro.visible = true;
   player_level_intro.play(PLAYER_LEVEL_INTRO, true);
   blocks.children.each(block => {
@@ -348,6 +356,10 @@ function clearLevel() {
   info_group.children.each(child => {
     child.visible = false;
   });
+  mummies.children.each(mummy => {
+    mummy.destroy();
+    _scene.matter.world.remove(mummy);
+  });
   portal.visible =
     levelText.visible = backgroundImage.visible = portal_open.visible = false;
   splash.visible = true;
@@ -359,8 +371,8 @@ function clearLevel() {
 }
 
 function updateStats() {
-  info_group.children.entries[0].setText('LEVEL: ' + level);
-  info_group.children.entries[1].setText('SCORE: ' + score);
+  info_group.getChildren()[0].setText('LEVEL: ' + level);
+  info_group.getChildren()[1].setText('SCORE: ' + score);
   // livesText.setText('LIVES: ' + lives);
 }
 
@@ -385,10 +397,8 @@ function renderBlocks() {
   });
 }
 
-function openPortal(capsule) {
+function openPortal() {
   portalOpen = true;
-  capsule.gameObject.visible = false;
-  capsule.destroy();
   portal_open.visible = true;
 }
 
@@ -438,7 +448,7 @@ function spawnObjects() {
         .setScale(SPRITE_SCALE)
         .setOrigin(0.5)
         .setBounce(0.4)
-        .setCircle(22)
+        .setCircle(25)
         .setDensity(.005)
         .setIgnoreGravity(false);
       newRock.body.label = 'rock';
@@ -465,7 +475,7 @@ function spawnObjects() {
       var newBomb = _scene.matter.add.sprite((bomb.x * BLOCK_SIZE - SPRITE_SIZE), bomb.y * BLOCK_SIZE - SPRITE_SIZE, 'explosive')
         .setScale(SPRITE_SCALE)
         .setOrigin(0.5)
-        .setRectangle(32, 32, 32, 32)
+        .setRectangle(46, 46, 46, 46)
         .setFixedRotation(true)
         .setIgnoreGravity(false)
         .setFriction(0, 0, 0);
@@ -478,13 +488,13 @@ function spawnObjects() {
       var newMummy = _scene.matter.add.sprite((mummy.x * BLOCK_SIZE - SPRITE_SIZE), mummy.y * BLOCK_SIZE - SPRITE_SIZE, 'mummy')
         .setScale(SPRITE_SCALE)
         .setOrigin(0.5)
-        .setRectangle(32, 32, 32, 32)
+        .setRectangle(50, 50, 50, 50)
         .setFixedRotation(true)
         .setIgnoreGravity(true)
         .setFriction(0, 0, 0);
+      newMummy.speedX = 0;
+      newMummy.speedY = 0;
       newMummy.body.label = 'mummy';
-      newMummy.setVelocityX(mummy.xv);
-      newMummy.setVelocityY(mummy.yv);
       mummies.add(newMummy);
     }
   });
@@ -492,7 +502,7 @@ function spawnObjects() {
     door = _scene.matter.add.sprite(levelData.door_position.x * BLOCK_SIZE - SPRITE_SIZE, levelData.door_position.y * BLOCK_SIZE - SPRITE_SIZE, 'door')
       .setScale(SPRITE_SCALE)
       .setOrigin(0.5)
-      .setRectangle(32, 32, 32, 32)
+      .setRectangle(50, 50, 50, 50)
       .setStatic(true)
       .setIgnoreGravity(true);
     door.body.label = 'door';
@@ -511,13 +521,15 @@ function spawnObjects() {
 
   levelData.capsule_position.forEach(capsule => {
     var newCapsule = _scene.matter.add.sprite((capsule.x * BLOCK_SIZE - SPRITE_SIZE), capsule.y * BLOCK_SIZE - SPRITE_SIZE, 'capsule')
-      .setScale(SPRITE_SCALE)
+      .setScale(.34)
       .setOrigin(0.5)
-      .setCircle(16)
+      .setCircle(25)
       .setIgnoreGravity(false);
+    console.log(newCapsule.width, newCapsule.height);
     newCapsule.body.label = 'capsule';
     newCapsule.play('capsule', true);
     capsules.add(newCapsule);
+    capsuleCount++;
   });
 
   player.visible = portal.visible = true;
@@ -571,6 +583,29 @@ function update() {
         player.play('idle', true);
       };
       updateStats();
+      mummies?.getChildren().forEach(mummy => {
+        if (player.x < mummy.x) {
+          mummy.speedX = -1;
+        }
+        else if (player.x > mummy.x) {
+          mummy.speedX = 1;
+        }
+        else {
+          mummy.speedX = 0;
+        }
+        mummy.setVelocityX(mummy.speedX);
+
+        if (player.y < mummy.y) {
+          mummy.speedY = -1;
+        }
+        else if (player.y > mummy.y) {
+          mummy.speedY = 1;
+        }
+        else {
+          mummy.speedY = 0;
+        }
+        mummy.setVelocityY(mummy.speedY);
+      });
     default:
       break;
   }
