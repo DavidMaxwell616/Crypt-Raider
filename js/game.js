@@ -329,10 +329,13 @@ function startLevel() {
 function showExplosion() {
   const exp = explosion.body.gameObject;
   blocks.children.each(block => {
-    if (block.x > exp.x - (exp.width) &&
-      block.x < exp.x + (exp.width) &&
-      block.y > exp.y - (exp.height) &&
-      block.y < exp.y + (exp.height)) {
+    if ((parseInt(block.frame.name) < 6) &&
+      (block.x > exp.x - (exp.width) &&
+        block.x < exp.x + (exp.width) &&
+        block.y > exp.y - (exp.height) &&
+        block.y < exp.y + (exp.height))
+    ) {
+      // console.log(block);
       block.visible = false;
       block.destroy();
       _scene.matter.world.remove(block);
@@ -444,12 +447,11 @@ function spawnObjects() {
   player_level_won.setPosition(0, 0);
   levelData.rock_position.forEach(rock => {
     if (rock.x != 0 && rock.y != 0) {
-      var newRock = _scene.matter.add.sprite(rock.x * BLOCK_SIZE, rock.y * BLOCK_SIZE, 'rock')
+      var newRock = _scene.matter.add.sprite(rock.x * BLOCK_SIZE - SPRITE_SIZE, rock.y * BLOCK_SIZE - SPRITE_SIZE, 'rock')
         .setScale(SPRITE_SCALE)
         .setOrigin(0.5)
         .setBounce(0.4)
-        .setCircle(25)
-        .setDensity(.005)
+        .setRectangle(48, 48, 48, 48)
         .setIgnoreGravity(false);
       newRock.body.label = 'rock';
       rocks.add(newRock);
@@ -460,13 +462,14 @@ function spawnObjects() {
       var newLocust = _scene.matter.add.sprite((locust.x * BLOCK_SIZE - SPRITE_SIZE), locust.y * BLOCK_SIZE - SPRITE_SIZE, 'locust')
         .setScale(SPRITE_SCALE)
         .setOrigin(0.5)
-        .setRectangle(32, 32, 32, 32)
+        .setRectangle(48, 48, 48, 48)
         .setFixedRotation(true)
         .setIgnoreGravity(true)
         .setFriction(0, 0, 0);
       newLocust.body.label = 'locust';
       newLocust.setVelocityX(locust.xv);
       newLocust.setVelocityY(locust.yv);
+      console.log('locust');
       locusts.add(newLocust);
     }
   });
@@ -523,9 +526,8 @@ function spawnObjects() {
     var newCapsule = _scene.matter.add.sprite((capsule.x * BLOCK_SIZE - SPRITE_SIZE), capsule.y * BLOCK_SIZE - SPRITE_SIZE, 'capsule')
       .setScale(.34)
       .setOrigin(0.5)
-      .setCircle(25)
+      .setRectangle(48, 48, 48, 48)
       .setIgnoreGravity(false);
-    console.log(newCapsule.width, newCapsule.height);
     newCapsule.body.label = 'capsule';
     newCapsule.play('capsule', true);
     capsules.add(newCapsule);
