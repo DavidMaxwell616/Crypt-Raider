@@ -376,7 +376,7 @@ function clearLevel() {
 function updateStats() {
   info_group.getChildren()[0].setText('LEVEL: ' + level);
   info_group.getChildren()[1].setText('SCORE: ' + score);
-  // livesText.setText('LIVES: ' + lives);
+  info_group.getChildren()[2].setText('LIVES: ' + lives);
 }
 
 function renderBlocks() {
@@ -467,9 +467,8 @@ function spawnObjects() {
         .setIgnoreGravity(true)
         .setFriction(0, 0, 0);
       newLocust.body.label = 'locust';
-      newLocust.setVelocityX(locust.xv);
-      newLocust.setVelocityY(locust.yv);
-      console.log('locust');
+      newLocust.setVelocityX(0);
+      newLocust.setVelocityY(.5);
       locusts.add(newLocust);
     }
   });
@@ -530,6 +529,7 @@ function spawnObjects() {
       .setIgnoreGravity(false);
     newCapsule.body.label = 'capsule';
     newCapsule.play('capsule', true);
+    newCapsule.anims.frame = Phaser.Math.Between(1, 5);
     capsules.add(newCapsule);
     capsuleCount++;
   });

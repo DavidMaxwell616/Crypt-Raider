@@ -51,6 +51,8 @@ var player;
 var explosion;
 var capsules;
 var explosives;
+var lives = 3;
+var timeLeft = 100;
 
 const PLAYER_SPEED = 2;
 const PLAYER_LEVEL_INTRO = 'player level intro';
