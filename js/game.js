@@ -66,19 +66,13 @@ function startLevel() {
         color: 'yellow'
       });
       info_group.add(info);
-      info = _scene.add.text(BLOCK_SIZE * 7 + 20, 10, 'ENERGY', {
+      info = _scene.add.text(BLOCK_SIZE * 7 + 20, 10, 'LIVES', {
         fontFamily: 'impact',
         fontSize: '24px',
         color: 'yellow'
       });
       info_group.add(info);
-      info = _scene.add.text(BLOCK_SIZE * 12 + 20, 10, 'TIME', {
-        fontFamily: 'impact',
-        fontSize: '24px',
-        color: 'yellow'
-      });
-      info_group.add(info);
-      info = _scene.add.text(BLOCK_SIZE * 14 + 20, 10, 'LIVES', {
+      info = _scene.add.text(BLOCK_SIZE * 10 + 20, 10, 'TIME', {
         fontFamily: 'impact',
         fontSize: '24px',
         color: 'yellow'
@@ -377,6 +371,7 @@ function updateStats() {
   info_group.getChildren()[0].setText('LEVEL: ' + level);
   info_group.getChildren()[1].setText('SCORE: ' + score);
   info_group.getChildren()[2].setText('LIVES: ' + lives);
+  info_group.getChildren()[3].setText('TIME: ' + timeLeft);
 }
 
 function renderBlocks() {
@@ -451,7 +446,7 @@ function spawnObjects() {
         .setScale(SPRITE_SCALE)
         .setOrigin(0.5)
         .setBounce(0.4)
-        .setRectangle(48, 48, 48, 48)
+        .setRectangle(48, 48)
         .setIgnoreGravity(false);
       newRock.body.label = 'rock';
       rocks.add(newRock);
@@ -462,7 +457,7 @@ function spawnObjects() {
       var newLocust = _scene.matter.add.sprite((locust.x * BLOCK_SIZE - SPRITE_SIZE), locust.y * BLOCK_SIZE - SPRITE_SIZE, 'locust')
         .setScale(SPRITE_SCALE)
         .setOrigin(0.5)
-        .setRectangle(48, 48, 48, 48)
+        .setRectangle(48, 48)
         .setFixedRotation(true)
         .setIgnoreGravity(true)
         .setFriction(0, 0, 0);
@@ -477,7 +472,7 @@ function spawnObjects() {
       var newBomb = _scene.matter.add.sprite((bomb.x * BLOCK_SIZE - SPRITE_SIZE), bomb.y * BLOCK_SIZE - SPRITE_SIZE, 'explosive')
         .setScale(SPRITE_SCALE)
         .setOrigin(0.5)
-        .setRectangle(46, 46, 46, 46)
+        .setRectangle(46, 46)
         .setFixedRotation(true)
         .setIgnoreGravity(false)
         .setFriction(0, 0, 0);
@@ -490,7 +485,7 @@ function spawnObjects() {
       var newMummy = _scene.matter.add.sprite((mummy.x * BLOCK_SIZE - SPRITE_SIZE), mummy.y * BLOCK_SIZE - SPRITE_SIZE, 'mummy')
         .setScale(SPRITE_SCALE)
         .setOrigin(0.5)
-        .setRectangle(50, 50, 50, 50)
+        .setRectangle(48, 48)
         .setFixedRotation(true)
         .setIgnoreGravity(true)
         .setFriction(0, 0, 0);
@@ -525,7 +520,7 @@ function spawnObjects() {
     var newCapsule = _scene.matter.add.sprite((capsule.x * BLOCK_SIZE - SPRITE_SIZE), capsule.y * BLOCK_SIZE - SPRITE_SIZE, 'capsule')
       .setScale(.34)
       .setOrigin(0.5)
-      .setRectangle(48, 48, 48, 48)
+      .setRectangle(48, 48)
       .setIgnoreGravity(false);
     newCapsule.body.label = 'capsule';
     newCapsule.play('capsule', true);
