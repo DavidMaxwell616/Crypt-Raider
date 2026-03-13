@@ -260,7 +260,7 @@
     "explosive_position": [{"x": 15,"y":7}], 
     "player_position": {"x": 10,"y":4}, 
     "portal_position": {"x": 10,"y":12},
-    "rock_position": [{"x": 5,"y":2},{"x": 14,"y":2}], 
+    "rock_position": [{"x": 5,"y":2},{"x": 15,"y":2}], 
     "mummy_position": [{"x": 0,"y":0}], 
     "locust_position": [{"x": 0,"y":0}], 
     "door_position": {"x": 10,"y":11},

@@ -1,0 +1,1146 @@
+import {
+  BLOCK_SIZE,
+  SPRITE_SIZE,
+  PLAYER_SPEED,
+  GAME_STATE,
+  LEVEL_CODES,
+  PLAYER_LEVEL_INTRO,
+  PLAYER_LEVEL_WON,
+  SPRITE_SCALE,
+  BLOCK_TYPES
+} from "./config.js";
+
+const pl = planck;
+const SCALE = 32;
+const FIXED_DT = 1 / 60;
+const VELOCITY_ITERS = 8;
+const POSITION_ITERS = 3;
+
+export class GameScene extends Phaser.Scene {
+  constructor() {
+    super("GameScene");
+
+    this.gameState = GAME_STATE.INTRO;
+
+    this.level = 1;
+    this.score = 0;
+    this.lives = 3;
+    this.timeLeft = 100;
+    this.capsuleCount = 0;
+    this.portalOpen = false;
+
+    this.objectData = null;
+    this.levelData = null;
+
+    this.glow1Scale = 2.5;
+    this.glow2Scale = 2.5;
+    this.glow1Grow = 0.05;
+    this.glow2Grow = 0.01;
+
+    this.accumulator = 0;
+  }
+
+  preload() {
+    this.load.image("splash", "assets/images/crypt raider title.svg");
+    this.load.image("glow", "assets/images/glow.png");
+    this.load.image("level intro", "assets/images/get ready.png");
+    this.load.image("background", "assets/images/background.png");
+    this.load.spritesheet("blocks", "assets/spritesheets/blocks.png", {
+      frameWidth: 64,
+      frameHeight: 64
+    });
+    this.load.image("start button", "assets/images/start button.png");
+    this.load.image("level complete", "assets/images/level complete.png");
+    this.load.image("portal", "assets/images/portal.png");
+    this.load.spritesheet("door", "assets/spritesheets/door.png", {
+      frameWidth: 32,
+      frameHeight: 32
+    });
+    this.load.spritesheet("rock", "assets/spritesheets/rock.png", {
+      frameWidth: 57,
+      frameHeight: 32
+    });
+    this.load.spritesheet("locust", "assets/spritesheets/locust.png", {
+      frameWidth: 32,
+      frameHeight: 32
+    });
+    this.load.spritesheet("mummy", "assets/spritesheets/mummy.png", {
+      frameWidth: 32,
+      frameHeight: 32
+    });
+    this.load.spritesheet("portal open", "assets/spritesheets/portal open.png", {
+      frameWidth: 64,
+      frameHeight: 60
+    });
+    this.load.spritesheet("player level won", "assets/spritesheets/player level won.png", {
+      frameWidth: 61,
+      frameHeight: 85
+    });
+    this.load.spritesheet("player", "assets/spritesheets/player.png", {
+      frameWidth: 27,
+      frameHeight: 32
+    });
+    this.load.spritesheet("capsule", "assets/spritesheets/capsule.png", {
+      frameWidth: 130,
+      frameHeight: 130
+    });
+    this.load.spritesheet("explosion", "assets/spritesheets/explosion.png", {
+      frameWidth: 98,
+      frameHeight: 98
+    });
+    this.load.spritesheet("explosive", "assets/spritesheets/explosive.png", {
+      frameWidth: 58,
+      frameHeight: 32
+    });
+    this.load.spritesheet(PLAYER_LEVEL_INTRO, "assets/spritesheets/player_intro.png", {
+      frameWidth: 87,
+      frameHeight: 95
+    });
+    this.load.spritesheet("key", "assets/spritesheets/key.png", {
+      frameWidth: 30,
+      frameHeight: 27
+    });
+
+    this.load.path = "../assets/json/";
+    this.load.json("levelData", "level_data.json");
+  }
+
+  create() {
+    const width = this.scale.width;
+    const height = this.scale.height;
+
+    this.world = new pl.World(pl.Vec2(0, 8));
+    this.physicsObjects = [];
+    this.pendingDestroyBodies = new Set();
+
+    this.createWorldBounds(width, height);
+
+    this.blocks = this.add.group();
+    this.rocks = this.add.group();
+    this.locusts = this.add.group();
+    this.mummies = this.add.group();
+    this.capsules = this.add.group();
+    this.explosives = this.add.group();
+    this.infoGroup = this.add.group();
+
+    this.objectData = this.cache.json.get("levelData");
+
+    this.createAnimations();
+    this.keys = this.input.keyboard.addKeys({
+      up: Phaser.Input.Keyboard.KeyCodes.UP,
+      down: Phaser.Input.Keyboard.KeyCodes.DOWN,
+      left: Phaser.Input.Keyboard.KeyCodes.LEFT,
+      right: Phaser.Input.Keyboard.KeyCodes.RIGHT,
+      space: Phaser.Input.Keyboard.KeyCodes.SPACE
+    });
+
+    this.registerCollisionHandler();
+
+    this.startLevel();
+  }
+
+  createWorldBounds(width, height) {
+    const thickness = 32;
+
+    this.createStaticBox(width / 2, -thickness / 2, width, thickness, "world-top");
+    this.createStaticBox(width / 2, height + thickness / 2, width, thickness, "world-bottom");
+    this.createStaticBox(-thickness / 2, height / 2, thickness, height, "world-left");
+    this.createStaticBox(width + thickness / 2, height / 2, thickness, height, "world-right");
+  }
+
+  createAnimations() {
+    if (!this.anims.exists("capsule")) {
+      this.anims.create({
+        key: "capsule",
+        frames: this.anims.generateFrameNumbers("capsule"),
+        frameRate: 8,
+        repeat: -1
+      });
+    }
+
+    if (!this.anims.exists("portal open")) {
+      this.anims.create({
+        key: "portal open",
+        frames: this.anims.generateFrameNumbers("portal open"),
+        frameRate: 8,
+        repeat: -1
+      });
+    }
+
+    if (!this.anims.exists("explosion")) {
+      this.anims.create({
+        key: "explosion",
+        frames: this.anims.generateFrameNumbers("explosion"),
+        frameRate: 8,
+        repeat: 0
+      });
+    }
+
+    if (!this.anims.exists("walk")) {
+      this.anims.create({
+        key: "walk",
+        frames: this.anims.generateFrameNumbers("player", { frames: [4, 5, 6] }),
+        frameRate: 8,
+        repeat: -1
+      });
+    }
+
+    if (!this.anims.exists("idle")) {
+      this.anims.create({
+        key: "idle",
+        frames: this.anims.generateFrameNumbers("player", { frames: [0] }),
+        frameRate: 8,
+        repeat: -1
+      });
+    }
+
+    if (!this.anims.exists("walk_down")) {
+      this.anims.create({
+        key: "walk_down",
+        frames: this.anims.generateFrameNumbers("player", { frames: [0, 1, 2, 3] }),
+        frameRate: 8,
+        repeat: -1
+      });
+    }
+
+    if (!this.anims.exists("walk_up")) {
+      this.anims.create({
+        key: "walk_up",
+        frames: this.anims.generateFrameNumbers("player", { frames: [8, 9, 10] }),
+        frameRate: 8,
+        repeat: -1
+      });
+    }
+
+    if (!this.anims.exists(PLAYER_LEVEL_WON)) {
+      this.anims.create({
+        key: PLAYER_LEVEL_WON,
+        frames: this.anims.generateFrameNumbers(PLAYER_LEVEL_WON),
+        frameRate: 8,
+        repeat: 0
+      });
+    }
+
+    if (!this.anims.exists(PLAYER_LEVEL_INTRO)) {
+      this.anims.create({
+        key: PLAYER_LEVEL_INTRO,
+        frames: this.anims.generateFrameNumbers(PLAYER_LEVEL_INTRO),
+        frameRate: 16,
+        repeat: -1
+      });
+    }
+
+    if (!this.anims.exists("door")) {
+      this.anims.create({
+        key: "door",
+        frames: this.anims.generateFrameNumbers("door"),
+        frameRate: 16,
+        repeat: 0
+      });
+    }
+  }
+
+  pxToWorld(v) {
+    return v / SCALE;
+  }
+
+  worldToPx(v) {
+    return v * SCALE;
+  }
+
+  destroyPhysicsObject(obj) {
+    if (!obj) return;
+
+    if (obj.sprite) {
+      obj.sprite.visible = false;
+      obj.sprite.destroy();
+    }
+
+    if (obj.body) {
+      this.pendingDestroyBodies.add(obj.body);
+    }
+  }
+
+  flushDestroyedBodies() {
+    if (!this.pendingDestroyBodies.size) return;
+
+    this.physicsObjects = this.physicsObjects.filter((entry) => {
+      if (!entry.body) return false;
+      if (this.pendingDestroyBodies.has(entry.body)) {
+        this.world.destroyBody(entry.body);
+        return false;
+      }
+      return true;
+    });
+
+    this.pendingDestroyBodies.clear();
+  }
+
+  createStaticBox(x, y, w, h, label = "Rectangle Body", sprite = null, options = {}) {
+    const body = this.world.createBody({
+      type: "static",
+      position: pl.Vec2(this.pxToWorld(x), this.pxToWorld(y))
+    });
+
+    const fixture = body.createFixture(pl.Box(this.pxToWorld(w / 2), this.pxToWorld(h / 2)), {
+      density: options.density ?? 1,
+      friction: options.friction ?? 0.3,
+      restitution: options.restitution ?? 0,
+      isSensor: options.isSensor ?? false
+    });
+
+    const obj = {
+      body,
+      fixture,
+      sprite,
+      label,
+      type: "static",
+      width: w,
+      height: h,
+      speedX: 0,
+      speedY: 0
+    };
+
+    body.setUserData(obj);
+    this.physicsObjects.push(obj);
+
+    return obj;
+  }
+
+  createDynamicBox(x, y, w, h, label, sprite, options = {}) {
+    const body = this.world.createDynamicBody({
+      position: pl.Vec2(this.pxToWorld(x), this.pxToWorld(y)),
+      fixedRotation: options.fixedRotation ?? false,
+      gravityScale: options.gravityScale ?? 1,
+      linearDamping: options.linearDamping ?? 0,
+      angularDamping: options.angularDamping ?? 0,
+      bullet: options.bullet ?? false
+    });
+
+    const fixture = body.createFixture(pl.Box(this.pxToWorld(w / 2), this.pxToWorld(h / 2)), {
+      density: options.density ?? 1,
+      friction: options.friction ?? 0.3,
+      restitution: options.restitution ?? 0,
+      isSensor: options.isSensor ?? false
+    });
+
+    const obj = {
+      body,
+      fixture,
+      sprite,
+      label,
+      type: "dynamic",
+      width: w,
+      height: h,
+      speedX: 0,
+      speedY: 0
+    };
+
+    body.setUserData(obj);
+    this.physicsObjects.push(obj);
+
+    return obj;
+  }
+
+  createSensorStatic(x, y, w, h, label, sprite) {
+    return this.createStaticBox(x, y, w, h, label, sprite, { isSensor: true });
+  }
+
+  syncPhysicsSprites() {
+    this.physicsObjects.forEach((obj) => {
+      if (!obj.sprite || !obj.body) return;
+      const p = obj.body.getPosition();
+      obj.sprite.x = this.worldToPx(p.x);
+      obj.sprite.y = this.worldToPx(p.y);
+      obj.sprite.rotation = obj.body.getAngle();
+    });
+  }
+
+  registerCollisionHandler() {
+    this.world.on("begin-contact", (contact) => {
+      const fixtureA = contact.getFixtureA();
+      const fixtureB = contact.getFixtureB();
+
+      const bodyA = fixtureA.getBody();
+      const bodyB = fixtureB.getBody();
+
+      const objA = bodyA.getUserData();
+      const objB = bodyB.getUserData();
+
+      if (!objA || !objB) return;
+
+      const aLabel = objA.label;
+      const bLabel = objB.label;
+
+      if (
+        !this.portalOpen &&
+        ((aLabel === "capsule" && bLabel === "portal") ||
+          (aLabel === "portal" && bLabel === "capsule"))
+      ) {
+        const capsuleObj = aLabel === "capsule" ? objA : objB;
+        this.destroyPhysicsObject(capsuleObj);
+        this.capsuleCount--;
+
+        if (this.capsuleCount <= 0) {
+          this.openPortal();
+        }
+        return;
+      }
+
+      if (
+        this.portalOpen &&
+        ((aLabel === "player" && bLabel === "portal") ||
+          (aLabel === "portal" && bLabel === "player"))
+      ) {
+        this.portalOpen = false;
+        this.playerLevelWon.visible = true;
+        this.playerLevelWon.setPosition(this.player.x, this.player.y);
+        this.playerLevelWon.play(PLAYER_LEVEL_WON, true);
+        this.player.visible = false;
+        return;
+      }
+
+      if (
+        ((aLabel === "player" && bLabel === "Rectangle Body") ||
+          (bLabel === "player" && aLabel === "Rectangle Body"))
+      ) {
+        const blockObj = aLabel === "Rectangle Body" ? objA : objB;
+        const frameName = blockObj?.sprite?.frame?.name;
+
+        if (BLOCK_TYPES[frameName] === "sand") {
+          this.destroyPhysicsObject(blockObj);
+        }
+        return;
+      }
+
+      if (
+        ((aLabel === "explosive" && bLabel === "Rectangle Body") ||
+          (bLabel === "explosive" && aLabel === "Rectangle Body"))
+      ) {
+        const explosiveObj = aLabel === "explosive" ? objA : objB;
+        const blockObj = aLabel === "Rectangle Body" ? objA : objB;
+        const vy = explosiveObj.body.getLinearVelocity().y;
+
+        if (vy > 3 / SCALE) {
+          this.explodeBodies(explosiveObj, blockObj);
+        }
+        return;
+      }
+
+      if (
+        ((aLabel === "rock" && bLabel === "explosive") ||
+          (bLabel === "rock" && aLabel === "explosive"))
+      ) {
+        const rockObj = aLabel === "rock" ? objA : objB;
+        const explosiveObj = aLabel === "explosive" ? objA : objB;
+
+        const rockVy = rockObj.body.getLinearVelocity().y;
+        const bombVy = explosiveObj.body.getLinearVelocity().y;
+
+        if (rockVy > 3 / SCALE || bombVy > 3 / SCALE) {
+          this.explodeBodies(rockObj, explosiveObj);
+        }
+        return;
+      }
+
+      if (aLabel === "locust" && bLabel === "Rectangle Body") {
+        const v = objA.body.getLinearVelocity();
+        objA.body.setLinearVelocity(pl.Vec2(v.x > 0 ? -v.x : v.x, v.y !== 0 ? -v.y : v.y));
+        return;
+      }
+
+      if (bLabel === "locust" && aLabel === "Rectangle Body") {
+        const v = objB.body.getLinearVelocity();
+        objB.body.setLinearVelocity(pl.Vec2(v.x > 0 ? -v.x : v.x, v.y !== 0 ? -v.y : v.y));
+        return;
+      }
+
+      if (
+        (aLabel === "rock" && bLabel === "locust") ||
+        (bLabel === "rock" && aLabel === "locust")
+      ) {
+        const rockObj = aLabel === "rock" ? objA : objB;
+        const locustObj = aLabel === "locust" ? objA : objB;
+
+        this.explosion.setPosition(rockObj.sprite.x, rockObj.sprite.y);
+        this.destroyPhysicsObject(rockObj);
+        this.destroyPhysicsObject(locustObj);
+
+        this.explosion.visible = true;
+        this.showExplosion();
+        this.explosion.play("explosion", true);
+        return;
+      }
+
+      if (
+        ((aLabel === "player" && bLabel === "key") ||
+          (bLabel === "player" && aLabel === "key"))
+      ) {
+        const keyObj = aLabel === "key" ? objA : objB;
+        this.keySprite.visible = false;
+        this.destroyPhysicsObject(keyObj);
+
+        if (this.door) {
+          this.door.play("door", true);
+        }
+      }
+    });
+  }
+
+  startLevel() {
+    const width = this.scale.width;
+    const height = this.scale.height;
+
+    switch (this.gameState) {
+      case GAME_STATE.INTRO:
+        this.blocks.clear(true, true);
+
+        this.glow1 = this.add.image(width / 2, height / 4, "glow").setOrigin(0.5);
+        this.glow2 = this.add.image(width / 2, height / 4, "glow").setOrigin(0.5).setAngle(90);
+        this.splash = this.add.image(width / 2, height / 2.7, "splash").setOrigin(0.5).setScale(2.5);
+
+        this.startButton = this.add.image(width / 2, height * 0.8, "start button")
+          .setOrigin(0.5)
+          .setScale(2.5)
+          .setInteractive()
+          .on("pointerdown", () => this.bumpLevel());
+
+        this.levelComplete = this.add.image(width / 2, height * 0.75, "level complete")
+          .setOrigin(0.5)
+          .setScale(1.5)
+          .setInteractive()
+          .on("pointerdown", () => {
+            this.gameState = GAME_STATE.LEVEL;
+            this.bumpLevel();
+          });
+
+        this.levelComplete.visible = false;
+        break;
+
+      case GAME_STATE.LEVEL_INTRO:
+        this.backgroundImage = this.add.image(0, 0, "background").setOrigin(0);
+
+        this.infoGroup.clear(true, true);
+
+        this.infoGroup.add(this.add.text(BLOCK_SIZE + 30, 10, "LEVEL: " + this.level, {
+          fontFamily: "impact",
+          fontSize: "24px",
+          color: "yellow"
+        }));
+
+        this.infoGroup.add(this.add.text(BLOCK_SIZE * 4 + 20, 10, "SCORE: " + this.score, {
+          fontFamily: "impact",
+          fontSize: "24px",
+          color: "yellow"
+        }));
+
+        this.infoGroup.add(this.add.text(BLOCK_SIZE * 7 + 20, 10, "LIVES: " + this.lives, {
+          fontFamily: "impact",
+          fontSize: "24px",
+          color: "yellow"
+        }));
+
+        this.infoGroup.add(this.add.text(BLOCK_SIZE * 10 + 20, 10, "TIME: " + this.timeLeft, {
+          fontFamily: "impact",
+          fontSize: "24px",
+          color: "yellow"
+        }));
+
+        this.getReady = this.add.image(BLOCK_SIZE * 4.9, BLOCK_SIZE * 4, "level intro")
+          .setOrigin(0)
+          .setScale(1.45, 1.7);
+
+        this.levelText = this.add.text(BLOCK_SIZE * 6, BLOCK_SIZE * 6, "LEVEL: " + this.level, {
+          fontFamily: "courier new",
+          fontSize: "24px",
+          fontWeight: "bold",
+          color: "white"
+        });
+
+        this.levelCode = this.add.text(
+          BLOCK_SIZE * 6,
+          BLOCK_SIZE * 7,
+          "LEVEL CODE: " + (LEVEL_CODES[this.level] || LEVEL_CODES[0]),
+          {
+            fontFamily: "courier new",
+            fontSize: "24px",
+            fontWeight: "bold",
+            color: "white"
+          }
+        );
+
+        this.startButton2 = this.add.sprite(BLOCK_SIZE * 7, BLOCK_SIZE * 8.1, "capsule")
+          .setOrigin(0)
+          .setScale(0.4)
+          .setInteractive()
+          .on("pointerdown", () => {
+            this.gameState = GAME_STATE.LEVEL;
+            this.startLevel();
+          });
+
+        this.startButton2.play("capsule", true);
+
+        this.startText = this.add.text(BLOCK_SIZE * 8.5, BLOCK_SIZE * 8.5, "START", {
+          fontFamily: "courier new",
+          fontSize: "24px",
+          fontWeight: "bold",
+          color: "white"
+        });
+        break;
+
+      case GAME_STATE.LEVEL:
+        this.cleanupLevelObjects();
+
+        if (this.getReady) this.getReady.visible = false;
+        if (this.levelText) this.levelText.visible = false;
+        if (this.levelCode) this.levelCode.visible = false;
+        if (this.startButton2) this.startButton2.visible = false;
+        if (this.startText) this.startText.visible = false;
+
+        this.levelData = this.objectData["level_" + this.level]?.[0];
+        if (!this.levelData) {
+          console.warn("Missing level data for level", this.level);
+          return;
+        }
+
+        this.player = this.add.sprite(0, 0, "player")
+          .setScale(SPRITE_SCALE)
+          .setOrigin(0.5);
+
+        this.playerObj = this.createDynamicBox(0, 0, 22, 28, "player", this.player, {
+          density: 5,
+          friction: 0,
+          restitution: 0,
+          fixedRotation: true,
+          gravityScale: 0
+        });
+
+        this.portalOpenSprite = this.add.sprite(0, 0, "portal open")
+          .setScale(1.72)
+          .setOrigin(0.5);
+        this.portalOpenSprite.visible = false;
+        this.portalOpenSprite.play("portal open", true);
+
+        this.portalOpenObj = this.createSensorStatic(0, 0, 64, 60, "portal open", this.portalOpenSprite);
+
+        this.keySprite = this.add.sprite(0, 0, "key")
+          .setScale(1.72)
+          .setOrigin(0.5);
+        this.keySprite.visible = false;
+
+        this.keyObj = this.createSensorStatic(0, 0, 30, 27, "key", this.keySprite);
+
+        this.explosion = this.add.sprite(0, 0, "explosion")
+          .setScale(1.72)
+          .setOrigin(0.5);
+        this.explosion.visible = false;
+
+        this.portal = this.add.sprite(0, 0, "portal")
+          .setScale(1.72)
+          .setOrigin(0.5);
+
+        this.portalObj = this.createStaticBox(0, 0, 64, 60, "portal", this.portal, {
+          isSensor: true
+        });
+
+        this.playerLevelWon = this.add.sprite(0, 0, PLAYER_LEVEL_WON)
+          .setScale(1.3)
+          .setOrigin(0.5);
+        this.playerLevelWon.visible = false;
+        this.playerLevelWon.off("animationcomplete");
+        this.playerLevelWon.on("animationcomplete", (animation) => {
+          if (animation.key === PLAYER_LEVEL_WON) {
+            this.clearLevel();
+          }
+        });
+
+        this.playerLevelIntro = this.add.sprite(width / 2, height / 2, PLAYER_LEVEL_INTRO)
+          .setScale(1.72)
+          .setOrigin(0.5);
+        this.playerLevelIntro.visible = false;
+
+        this.renderBlocks();
+        this.spawnObjects();
+        this.portalOpen = false;
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  explodeBodies(obj1, obj2) {
+    this.explosion.setPosition(obj1.sprite.x, obj1.sprite.y);
+
+    this.destroyPhysicsObject(obj1);
+    this.destroyPhysicsObject(obj2);
+
+    this.explosion.visible = true;
+    this.showExplosion();
+    this.explosion.play("explosion", true);
+  }
+
+  showExplosion() {
+    const exp = this.explosion;
+
+    this.blocks.getChildren().forEach((block) => {
+      if (
+        parseInt(block.frame.name, 10) < 6 &&
+        block.x > exp.x - exp.width &&
+        block.x < exp.x + exp.width &&
+        block.y > exp.y - exp.height &&
+        block.y < exp.y + exp.height
+      ) {
+        const bodyObj = block.bodyRef;
+        if (bodyObj) {
+          this.destroyPhysicsObject(bodyObj);
+        } else {
+          block.visible = false;
+          block.destroy();
+        }
+      }
+    });
+  }
+
+  clearLevel() {
+    this.capsuleCount = 0;
+
+    if (this.playerLevelIntro) {
+      this.playerLevelIntro.visible = true;
+      this.playerLevelIntro.play(PLAYER_LEVEL_INTRO, true);
+    }
+
+    this.blocks.clear(true, true);
+    this.rocks.clear(true, true);
+    this.mummies.clear(true, true);
+    this.locusts.clear(true, true);
+    this.capsules.clear(true, true);
+    this.explosives.clear(true, true);
+
+    this.infoGroup.getChildren().forEach((child) => {
+      child.visible = false;
+    });
+
+    if (this.portal) this.portal.visible = false;
+    if (this.levelText) this.levelText.visible = false;
+    if (this.backgroundImage) this.backgroundImage.visible = false;
+    if (this.portalOpenSprite) this.portalOpenSprite.visible = false;
+
+    if (this.splash) this.splash.visible = true;
+    if (this.glow1) this.glow1.visible = true;
+    if (this.glow2) this.glow2.visible = true;
+    if (this.levelComplete) this.levelComplete.visible = true;
+
+    if (this.glow1) this.glow1.setScale(0.75);
+    if (this.glow2) this.glow2.setScale(0.75);
+    if (this.splash) this.splash.setScale(0.75);
+
+    if (this.splash) this.splash.y -= 40;
+    if (this.glow1) this.glow1.y -= 40;
+    if (this.glow2) this.glow2.y -= 40;
+
+    this.gameState = GAME_STATE.INTERMISSION;
+  }
+
+  updateStats() {
+    const children = this.infoGroup.getChildren();
+    if (children[0]) children[0].setText("LEVEL: " + this.level);
+    if (children[1]) children[1].setText("SCORE: " + this.score);
+    if (children[2]) children[2].setText("LIVES: " + this.lives);
+    if (children[3]) children[3].setText("TIME: " + this.timeLeft);
+  }
+
+  renderBlocks() {
+    if (!this.levelData?.walls) return;
+
+    let blockX = BLOCK_SIZE / 2;
+    let blockY = BLOCK_SIZE + BLOCK_SIZE / 2;
+    const gameWidth = this.scale.width;
+
+    this.levelData.walls.forEach((block) => {
+      if (block > 0) {
+        const sprite = this.add.sprite(blockX, blockY, "blocks")
+          .setOrigin(0.5)
+          .setScale(0.78125)
+          .setFrame(block);
+
+        const obj = this.createStaticBox(blockX, blockY, BLOCK_SIZE, BLOCK_SIZE, "Rectangle Body", sprite, {
+          friction: 0.4,
+          restitution: 0
+        });
+
+        sprite.bodyRef = obj;
+        this.blocks.add(sprite);
+      }
+
+      blockX += BLOCK_SIZE;
+      if (blockX > gameWidth - BLOCK_SIZE / 2) {
+        blockX = BLOCK_SIZE / 2;
+        blockY += BLOCK_SIZE;
+      }
+    });
+  }
+
+  openPortal() {
+    this.portalOpen = true;
+    if (this.portalOpenSprite) {
+      this.portalOpenSprite.visible = true;
+    }
+  }
+
+  bumpLevel() {
+    switch (this.gameState) {
+      case GAME_STATE.INTRO:
+        this.gameState = GAME_STATE.LEVEL_INTRO;
+
+        if (this.glow1) this.glow1.visible = false;
+        if (this.glow2) this.glow2.visible = false;
+        if (this.splash) this.splash.visible = false;
+        if (this.startButton) this.startButton.visible = false;
+
+        this.startLevel();
+        break;
+
+      case GAME_STATE.LEVEL:
+        this.level++;
+        this.gameState = GAME_STATE.LEVEL;
+        this.startLevel();
+        break;
+
+      case GAME_STATE.INTERMISSION:
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  spawnObjects() {
+    if (!this.levelData) return;
+
+    this.capsuleCount = 0;
+
+    const playerX = this.levelData.player_position.x * BLOCK_SIZE - SPRITE_SIZE;
+    const playerY = this.levelData.player_position.y * BLOCK_SIZE - SPRITE_SIZE;
+    this.playerObj.body.setTransform(pl.Vec2(this.pxToWorld(playerX), this.pxToWorld(playerY)), 0);
+    this.playerObj.body.setLinearVelocity(pl.Vec2(0, 0));
+
+    const portalX = this.levelData.portal_position.x * BLOCK_SIZE - SPRITE_SIZE;
+    const portalY = this.levelData.portal_position.y * BLOCK_SIZE - SPRITE_SIZE;
+    this.portalObj.body.setTransform(pl.Vec2(this.pxToWorld(portalX), this.pxToWorld(portalY)), 0);
+    this.portalOpenObj.body.setTransform(pl.Vec2(this.pxToWorld(portalX), this.pxToWorld(portalY)), 0);
+
+    const keyX = this.levelData.key_position.x * BLOCK_SIZE - SPRITE_SIZE;
+    const keyY = this.levelData.key_position.y * BLOCK_SIZE - SPRITE_SIZE;
+    this.keyObj.body.setTransform(pl.Vec2(this.pxToWorld(keyX), this.pxToWorld(keyY)), 0);
+    this.keySprite.setVisible(true);
+
+    this.playerLevelWon.setPosition(0, 0);
+
+    this.levelData.rock_position.forEach((rock) => {
+      if (rock.x !== 0 && rock.y !== 0) {
+        const x = rock.x * BLOCK_SIZE - SPRITE_SIZE;
+        const y = rock.y * BLOCK_SIZE - SPRITE_SIZE;
+
+        const sprite = this.add.sprite(x, y, "rock")
+          .setScale(SPRITE_SCALE)
+          .setOrigin(0.5);
+
+        const obj = this.createDynamicBox(x, y, 48, 48, "rock", sprite, {
+          density: 1,
+          friction: 0.3,
+          restitution: 0.4,
+          fixedRotation: false,
+          gravityScale: 1
+        });
+
+        sprite.bodyRef = obj;
+        this.rocks.add(sprite);
+      }
+    });
+
+    this.levelData.locust_position.forEach((locust) => {
+      if (locust.x !== 0 && locust.y !== 0) {
+        const x = locust.x * BLOCK_SIZE - SPRITE_SIZE;
+        const y = locust.y * BLOCK_SIZE - SPRITE_SIZE;
+
+        const sprite = this.add.sprite(x, y, "locust")
+          .setScale(SPRITE_SCALE)
+          .setOrigin(0.5);
+
+        const obj = this.createDynamicBox(x, y, 48, 48, "locust", sprite, {
+          density: 1,
+          friction: 0,
+          restitution: 0,
+          fixedRotation: true,
+          gravityScale: 0
+        });
+
+        obj.body.setLinearVelocity(pl.Vec2(0, 0.5 / SCALE));
+        sprite.bodyRef = obj;
+        this.locusts.add(sprite);
+      }
+    });
+
+    this.levelData.explosive_position.forEach((bomb) => {
+      if (bomb.x !== 0 && bomb.y !== 0) {
+        const x = bomb.x * BLOCK_SIZE - SPRITE_SIZE;
+        const y = bomb.y * BLOCK_SIZE - SPRITE_SIZE;
+
+        const sprite = this.add.sprite(x, y, "explosive")
+          .setScale(SPRITE_SCALE)
+          .setOrigin(0.5);
+
+        const obj = this.createDynamicBox(x, y, 46, 46, "explosive", sprite, {
+          density: 1,
+          friction: 0,
+          restitution: 0,
+          fixedRotation: true,
+          gravityScale: 1
+        });
+
+        sprite.bodyRef = obj;
+        this.explosives.add(sprite);
+      }
+    });
+
+    this.levelData.mummy_position.forEach((mummy) => {
+      if (mummy.x !== 0 && mummy.y !== 0) {
+        const x = mummy.x * BLOCK_SIZE - SPRITE_SIZE;
+        const y = mummy.y * BLOCK_SIZE - SPRITE_SIZE;
+
+        const sprite = this.add.sprite(x, y, "mummy")
+          .setScale(SPRITE_SCALE)
+          .setOrigin(0.5);
+
+        const obj = this.createDynamicBox(x, y, 48, 48, "mummy", sprite, {
+          density: 1,
+          friction: 0,
+          restitution: 0,
+          fixedRotation: true,
+          gravityScale: 0
+        });
+
+        obj.speedX = 0;
+        obj.speedY = 0;
+        sprite.bodyRef = obj;
+        this.mummies.add(sprite);
+      }
+    });
+
+    if (this.levelData.door_position.x !== 0 && this.levelData.door_position.y !== 0) {
+      const x = this.levelData.door_position.x * BLOCK_SIZE - SPRITE_SIZE;
+      const y = this.levelData.door_position.y * BLOCK_SIZE - SPRITE_SIZE;
+
+      this.door = this.add.sprite(x, y, "door")
+        .setScale(SPRITE_SCALE)
+        .setOrigin(0.5);
+
+      this.doorObj = this.createStaticBox(x, y, 50, 50, "door", this.door, {
+        friction: 0.2
+      });
+
+      this.door.off("animationcomplete");
+      this.door.on("animationcomplete", () => {
+        this.destroyPhysicsObject(this.doorObj);
+        this.door = null;
+        this.doorObj = null;
+      });
+    }
+
+    this.levelData.capsule_position.forEach((capsule) => {
+      const x = capsule.x * BLOCK_SIZE - SPRITE_SIZE;
+      const y = capsule.y * BLOCK_SIZE - SPRITE_SIZE;
+
+      const sprite = this.add.sprite(x, y, "capsule")
+        .setScale(0.34)
+        .setOrigin(0.5);
+
+      const obj = this.createDynamicBox(x, y, 48, 48, "capsule", sprite, {
+        density: 1,
+        friction: 0.2,
+        restitution: 0,
+        fixedRotation: false,
+        gravityScale: 1
+      });
+
+      sprite.play("capsule", true);
+      sprite.anims.setCurrentFrame(
+        this.anims.get("capsule").frames[Phaser.Math.Between(1, 5)]
+      );
+
+      sprite.bodyRef = obj;
+      this.capsules.add(sprite);
+      this.capsuleCount++;
+    });
+
+    this.player.visible = true;
+    this.portal.visible = true;
+    this.syncPhysicsSprites();
+  }
+
+  cleanupLevelObjects() {
+    const groups = [
+      this.blocks,
+      this.rocks,
+      this.locusts,
+      this.mummies,
+      this.capsules,
+      this.explosives
+    ];
+
+    groups.forEach((group) => {
+      group?.getChildren().forEach((child) => {
+        if (child.bodyRef) {
+          this.destroyPhysicsObject(child.bodyRef);
+        } else {
+          child.destroy();
+        }
+      });
+      group?.clear(false, false);
+    });
+
+    const extraObjects = [
+      "playerObj",
+      "portalObj",
+      "portalOpenObj",
+      "keyObj",
+      "doorObj"
+    ];
+
+    extraObjects.forEach((key) => {
+      if (this[key]) {
+        this.destroyPhysicsObject(this[key]);
+        this[key] = null;
+      }
+    });
+
+    const sprites = [
+      "player",
+      "portal",
+      "portalOpenSprite",
+      "keySprite",
+      "explosion",
+      "door",
+      "playerLevelWon",
+      "playerLevelIntro"
+    ];
+
+    sprites.forEach((key) => {
+      if (this[key]) {
+        this[key].destroy();
+        this[key] = null;
+      }
+    });
+
+    this.flushDestroyedBodies();
+  }
+
+  showGlowEffect() {
+    const glowScale = this.gameState === GAME_STATE.INTRO ? 3 : 1;
+
+    if (this.glow1.scale < 0 || this.glow1.scale > glowScale) {
+      this.glow1Grow *= -0.25;
+    }
+
+    if (this.glow2.scale < 0 || this.glow2.scale > glowScale) {
+      this.glow2Grow *= -0.25;
+    }
+
+    this.glow1.scale += this.glow1Grow;
+    this.glow2.scale += this.glow2Grow;
+    this.glow1.angle++;
+    this.glow2.angle++;
+  }
+
+  handlePlayerMovement() {
+    if (!this.playerObj || !this.player) return;
+
+    let vx = 0;
+    let vy = 0;
+
+    if (Phaser.Input.Keyboard.JustDown(this.keys.left)) {
+      vx = -PLAYER_SPEED / SCALE;
+      this.player.setFlipX(true);
+      this.player.play("walk", true);
+    } else if (Phaser.Input.Keyboard.JustDown(this.keys.right)) {
+      vx = PLAYER_SPEED / SCALE;
+      this.player.setFlipX(false);
+      this.player.play("walk", true);
+    } else if (Phaser.Input.Keyboard.JustDown(this.keys.up)) {
+      vy = -PLAYER_SPEED / SCALE;
+      this.player.play("walk_up", true);
+    } else if (Phaser.Input.Keyboard.JustDown(this.keys.down)) {
+      vy = PLAYER_SPEED / SCALE;
+      this.player.play("walk_down", true);
+    } else {
+      this.player.play("idle", true);
+    }
+
+    this.playerObj.body.setLinearVelocity(pl.Vec2(vx, vy));
+  }
+
+  handleMummies() {
+    this.mummies?.getChildren().forEach((mummySprite) => {
+      const mummyObj = mummySprite.bodyRef;
+      if (!mummyObj || !this.player) return;
+
+      if (this.player.x < mummySprite.x) {
+        mummyObj.speedX = -1 / SCALE;
+      } else if (this.player.x > mummySprite.x) {
+        mummyObj.speedX = 1 / SCALE;
+      } else {
+        mummyObj.speedX = 0;
+      }
+
+      if (this.player.y < mummySprite.y) {
+        mummyObj.speedY = -1 / SCALE;
+      } else if (this.player.y > mummySprite.y) {
+        mummyObj.speedY = 1 / SCALE;
+      } else {
+        mummyObj.speedY = 0;
+      }
+
+      mummyObj.body.setLinearVelocity(pl.Vec2(mummyObj.speedX, mummyObj.speedY));
+    });
+  }
+
+  stepPhysics(delta) {
+    const dt = Math.min(delta / 1000, 0.05);
+    this.accumulator += dt;
+
+    while (this.accumulator >= FIXED_DT) {
+      this.world.step(FIXED_DT, VELOCITY_ITERS, POSITION_ITERS);
+      this.accumulator -= FIXED_DT;
+      this.flushDestroyedBodies();
+    }
+
+    this.syncPhysicsSprites();
+  }
+
+  update(time, delta) {
+    switch (this.gameState) {
+      case GAME_STATE.INTRO:
+        if (Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+          this.bumpLevel();
+        }
+      case GAME_STATE.INTERMISSION:
+        if (this.glow1 && this.glow2) {
+          this.showGlowEffect();
+        }
+        break;
+
+      case GAME_STATE.LEVEL:
+        if (!this.player) return;
+
+        this.handlePlayerMovement();
+        this.handleMummies();
+        this.stepPhysics(delta);
+        this.updateStats();
+        break;
+
+      default:
+        break;
+    }
+  }
+}
