@@ -10,12 +10,6 @@ import {
   BLOCK_TYPES
 } from "./config.js";
 
-const pl = planck;
-const SCALE = 32;
-const FIXED_DT = 1 / 60;
-const VELOCITY_ITERS = 8;
-const POSITION_ITERS = 3;
-
 export class GameScene extends Phaser.Scene {
   constructor() {
     super("GameScene");
@@ -36,8 +30,6 @@ export class GameScene extends Phaser.Scene {
     this.glow2Scale = 2.5;
     this.glow1Grow = 0.05;
     this.glow2Grow = 0.01;
-
-    this.accumulator = 0;
   }
 
   preload() {
@@ -109,18 +101,14 @@ export class GameScene extends Phaser.Scene {
     const width = this.scale.width;
     const height = this.scale.height;
 
-    this.world = new pl.World(pl.Vec2(0, 8));
-    this.physicsObjects = [];
-    this.pendingDestroyBodies = new Set();
+    this.physics.world.setBounds(0, 0, width, height);
 
-    this.createWorldBounds(width, height);
-
-    this.blocks = this.add.group();
-    this.rocks = this.add.group();
-    this.locusts = this.add.group();
-    this.mummies = this.add.group();
-    this.capsules = this.add.group();
-    this.explosives = this.add.group();
+    this.blocks = this.physics.add.staticGroup();
+    this.rocks = this.physics.add.group();
+    this.locusts = this.physics.add.group();
+    this.mummies = this.physics.add.group();
+    this.capsules = this.physics.add.group();
+    this.explosives = this.physics.add.group();
     this.infoGroup = this.add.group();
 
     this.objectData = this.cache.json.get("levelData");
@@ -134,18 +122,7 @@ export class GameScene extends Phaser.Scene {
       space: Phaser.Input.Keyboard.KeyCodes.SPACE
     });
 
-    this.registerCollisionHandler();
-
     this.startLevel();
-  }
-
-  createWorldBounds(width, height) {
-    const thickness = 32;
-
-    this.createStaticBox(width / 2, -thickness / 2, width, thickness, "world-top");
-    this.createStaticBox(width / 2, height + thickness / 2, width, thickness, "world-bottom");
-    this.createStaticBox(-thickness / 2, height / 2, thickness, height, "world-left");
-    this.createStaticBox(width + thickness / 2, height / 2, thickness, height, "world-right");
   }
 
   createAnimations() {
@@ -238,253 +215,6 @@ export class GameScene extends Phaser.Scene {
         repeat: 0
       });
     }
-  }
-
-  pxToWorld(v) {
-    return v / SCALE;
-  }
-
-  worldToPx(v) {
-    return v * SCALE;
-  }
-
-  destroyPhysicsObject(obj) {
-    if (!obj) return;
-
-    if (obj.sprite) {
-      obj.sprite.visible = false;
-      obj.sprite.destroy();
-    }
-
-    if (obj.body) {
-      this.pendingDestroyBodies.add(obj.body);
-    }
-  }
-
-  flushDestroyedBodies() {
-    if (!this.pendingDestroyBodies.size) return;
-
-    this.physicsObjects = this.physicsObjects.filter((entry) => {
-      if (!entry.body) return false;
-      if (this.pendingDestroyBodies.has(entry.body)) {
-        this.world.destroyBody(entry.body);
-        return false;
-      }
-      return true;
-    });
-
-    this.pendingDestroyBodies.clear();
-  }
-
-  createStaticBox(x, y, w, h, label = "Rectangle Body", sprite = null, options = {}) {
-    const body = this.world.createBody({
-      type: "static",
-      position: pl.Vec2(this.pxToWorld(x), this.pxToWorld(y))
-    });
-
-    const fixture = body.createFixture(pl.Box(this.pxToWorld(w / 2), this.pxToWorld(h / 2)), {
-      density: options.density ?? 1,
-      friction: options.friction ?? 0.3,
-      restitution: options.restitution ?? 0,
-      isSensor: options.isSensor ?? false
-    });
-
-    const obj = {
-      body,
-      fixture,
-      sprite,
-      label,
-      type: "static",
-      width: w,
-      height: h,
-      speedX: 0,
-      speedY: 0
-    };
-
-    body.setUserData(obj);
-    this.physicsObjects.push(obj);
-
-    return obj;
-  }
-
-  createDynamicBox(x, y, w, h, label, sprite, options = {}) {
-    const body = this.world.createDynamicBody({
-      position: pl.Vec2(this.pxToWorld(x), this.pxToWorld(y)),
-      fixedRotation: options.fixedRotation ?? false,
-      gravityScale: options.gravityScale ?? 1,
-      linearDamping: options.linearDamping ?? 0,
-      angularDamping: options.angularDamping ?? 0,
-      bullet: options.bullet ?? false
-    });
-
-    const fixture = body.createFixture(pl.Box(this.pxToWorld(w / 2), this.pxToWorld(h / 2)), {
-      density: options.density ?? 1,
-      friction: options.friction ?? 0.3,
-      restitution: options.restitution ?? 0,
-      isSensor: options.isSensor ?? false
-    });
-
-    const obj = {
-      body,
-      fixture,
-      sprite,
-      label,
-      type: "dynamic",
-      width: w,
-      height: h,
-      speedX: 0,
-      speedY: 0
-    };
-
-    body.setUserData(obj);
-    this.physicsObjects.push(obj);
-
-    return obj;
-  }
-
-  createSensorStatic(x, y, w, h, label, sprite) {
-    return this.createStaticBox(x, y, w, h, label, sprite, { isSensor: true });
-  }
-
-  syncPhysicsSprites() {
-    this.physicsObjects.forEach((obj) => {
-      if (!obj.sprite || !obj.body) return;
-      const p = obj.body.getPosition();
-      obj.sprite.x = this.worldToPx(p.x);
-      obj.sprite.y = this.worldToPx(p.y);
-      obj.sprite.rotation = obj.body.getAngle();
-    });
-  }
-
-  registerCollisionHandler() {
-    this.world.on("begin-contact", (contact) => {
-      const fixtureA = contact.getFixtureA();
-      const fixtureB = contact.getFixtureB();
-
-      const bodyA = fixtureA.getBody();
-      const bodyB = fixtureB.getBody();
-
-      const objA = bodyA.getUserData();
-      const objB = bodyB.getUserData();
-
-      if (!objA || !objB) return;
-
-      const aLabel = objA.label;
-      const bLabel = objB.label;
-
-      if (
-        !this.portalOpen &&
-        ((aLabel === "capsule" && bLabel === "portal") ||
-          (aLabel === "portal" && bLabel === "capsule"))
-      ) {
-        const capsuleObj = aLabel === "capsule" ? objA : objB;
-        this.destroyPhysicsObject(capsuleObj);
-        this.capsuleCount--;
-
-        if (this.capsuleCount <= 0) {
-          this.openPortal();
-        }
-        return;
-      }
-
-      if (
-        this.portalOpen &&
-        ((aLabel === "player" && bLabel === "portal") ||
-          (aLabel === "portal" && bLabel === "player"))
-      ) {
-        this.portalOpen = false;
-        this.playerLevelWon.visible = true;
-        this.playerLevelWon.setPosition(this.player.x, this.player.y);
-        this.playerLevelWon.play(PLAYER_LEVEL_WON, true);
-        this.player.visible = false;
-        return;
-      }
-
-      if (
-        ((aLabel === "player" && bLabel === "Rectangle Body") ||
-          (bLabel === "player" && aLabel === "Rectangle Body"))
-      ) {
-        const blockObj = aLabel === "Rectangle Body" ? objA : objB;
-        const frameName = blockObj?.sprite?.frame?.name;
-
-        if (BLOCK_TYPES[frameName] === "sand") {
-          this.destroyPhysicsObject(blockObj);
-        }
-        return;
-      }
-
-      if (
-        ((aLabel === "explosive" && bLabel === "Rectangle Body") ||
-          (bLabel === "explosive" && aLabel === "Rectangle Body"))
-      ) {
-        const explosiveObj = aLabel === "explosive" ? objA : objB;
-        const blockObj = aLabel === "Rectangle Body" ? objA : objB;
-        const vy = explosiveObj.body.getLinearVelocity().y;
-
-        if (vy > 3 / SCALE) {
-          this.explodeBodies(explosiveObj, blockObj);
-        }
-        return;
-      }
-
-      if (
-        ((aLabel === "rock" && bLabel === "explosive") ||
-          (bLabel === "rock" && aLabel === "explosive"))
-      ) {
-        const rockObj = aLabel === "rock" ? objA : objB;
-        const explosiveObj = aLabel === "explosive" ? objA : objB;
-
-        const rockVy = rockObj.body.getLinearVelocity().y;
-        const bombVy = explosiveObj.body.getLinearVelocity().y;
-
-        if (rockVy > 3 / SCALE || bombVy > 3 / SCALE) {
-          this.explodeBodies(rockObj, explosiveObj);
-        }
-        return;
-      }
-
-      if (aLabel === "locust" && bLabel === "Rectangle Body") {
-        const v = objA.body.getLinearVelocity();
-        objA.body.setLinearVelocity(pl.Vec2(v.x > 0 ? -v.x : v.x, v.y !== 0 ? -v.y : v.y));
-        return;
-      }
-
-      if (bLabel === "locust" && aLabel === "Rectangle Body") {
-        const v = objB.body.getLinearVelocity();
-        objB.body.setLinearVelocity(pl.Vec2(v.x > 0 ? -v.x : v.x, v.y !== 0 ? -v.y : v.y));
-        return;
-      }
-
-      if (
-        (aLabel === "rock" && bLabel === "locust") ||
-        (bLabel === "rock" && aLabel === "locust")
-      ) {
-        const rockObj = aLabel === "rock" ? objA : objB;
-        const locustObj = aLabel === "locust" ? objA : objB;
-
-        this.explosion.setPosition(rockObj.sprite.x, rockObj.sprite.y);
-        this.destroyPhysicsObject(rockObj);
-        this.destroyPhysicsObject(locustObj);
-
-        this.explosion.visible = true;
-        this.showExplosion();
-        this.explosion.play("explosion", true);
-        return;
-      }
-
-      if (
-        ((aLabel === "player" && bLabel === "key") ||
-          (bLabel === "player" && aLabel === "key"))
-      ) {
-        const keyObj = aLabel === "key" ? objA : objB;
-        this.keySprite.visible = false;
-        this.destroyPhysicsObject(keyObj);
-
-        if (this.door) {
-          this.door.play("door", true);
-        }
-      }
-    });
   }
 
   startLevel() {
@@ -603,17 +333,12 @@ export class GameScene extends Phaser.Scene {
           return;
         }
 
-        this.player = this.add.sprite(0, 0, "player")
+        this.player = this.physics.add.sprite(0, 0, "player")
           .setScale(SPRITE_SCALE)
-          .setOrigin(0.5);
+          .setOrigin(0.5)
+          .setCollideWorldBounds(true);
 
-        this.playerObj = this.createDynamicBox(0, 0, 22, 28, "player", this.player, {
-          density: 5,
-          friction: 0,
-          restitution: 0,
-          fixedRotation: true,
-          gravityScale: 0
-        });
+        this.player.body.setAllowGravity(false);
 
         this.portalOpenSprite = this.add.sprite(0, 0, "portal open")
           .setScale(1.72)
@@ -621,27 +346,27 @@ export class GameScene extends Phaser.Scene {
         this.portalOpenSprite.visible = false;
         this.portalOpenSprite.play("portal open", true);
 
-        this.portalOpenObj = this.createSensorStatic(0, 0, 64, 60, "portal open", this.portalOpenSprite);
-
-        this.keySprite = this.add.sprite(0, 0, "key")
+        this.keySprite = this.physics.add.sprite(0, 0, "key")
           .setScale(1.72)
-          .setOrigin(0.5);
-        this.keySprite.visible = false;
+          .setOrigin(0.5)
+          .setImmovable(true);
 
-        this.keyObj = this.createSensorStatic(0, 0, 30, 27, "key", this.keySprite);
+        this.keySprite.body.setAllowGravity(false);
+        this.keySprite.visible = false;
+        this.keySprite.label = "key";
 
         this.explosion = this.add.sprite(0, 0, "explosion")
           .setScale(1.72)
           .setOrigin(0.5);
         this.explosion.visible = false;
 
-        this.portal = this.add.sprite(0, 0, "portal")
+        this.portal = this.physics.add.sprite(0, 0, "portal")
           .setScale(1.72)
-          .setOrigin(0.5);
+          .setOrigin(0.5)
+          .setImmovable(true);
 
-        this.portalObj = this.createStaticBox(0, 0, 64, 60, "portal", this.portal, {
-          isSensor: true
-        });
+        this.portal.body.setAllowGravity(false);
+        this.portal.label = "portal";
 
         this.playerLevelWon = this.add.sprite(0, 0, PLAYER_LEVEL_WON)
           .setScale(1.3)
@@ -662,6 +387,7 @@ export class GameScene extends Phaser.Scene {
         this.renderBlocks();
         this.spawnObjects();
         this.portalOpen = false;
+        this.registerArcadeColliders();
         break;
 
       default:
@@ -669,11 +395,114 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  explodeBodies(obj1, obj2) {
-    this.explosion.setPosition(obj1.sprite.x, obj1.sprite.y);
+  registerArcadeColliders() {
+    if (!this.player) return;
 
-    this.destroyPhysicsObject(obj1);
-    this.destroyPhysicsObject(obj2);
+    // solid collisions
+    this.physics.add.collider(this.player, this.blocks, this.handlePlayerVsBlock, null, this);
+    this.physics.add.collider(this.capsules, this.blocks);
+    this.physics.add.collider(this.player, this.capsules);
+
+    this.physics.add.collider(this.rocks, this.blocks);
+    this.physics.add.collider(this.explosives, this.blocks, this.handleExplosiveVsBlock, null, this);
+    this.physics.add.collider(this.rocks, this.explosives, this.handleRockVsExplosive, null, this);
+    this.physics.add.collider(this.locusts, this.blocks, this.handleLocustVsBlock, null, this);
+
+    // trigger overlaps
+    this.physics.add.overlap(this.player, this.keySprite, this.handlePlayerVsKey, null, this);
+    this.physics.add.overlap(this.capsules, this.portal, this.handleCapsuleVsPortal, null, this);
+    this.physics.add.overlap(this.player, this.portal, this.handlePlayerVsPortal, null, this);
+    this.physics.add.overlap(this.rocks, this.locusts, this.handleRockVsLocust, null, this);
+  }
+
+  handlePlayerVsBlock(player, block) {
+    const frameName = block?.frame?.name;
+    if (BLOCK_TYPES[frameName] === "sand") {
+      block.destroy();
+    }
+  }
+
+  handleExplosiveVsBlock(explosive, block) {
+    if (!explosive.body || !block) return;
+    if (explosive.body.velocity.y > 3) {
+      this.explodeBodies(explosive, block);
+    }
+  }
+
+  handleRockVsExplosive(rock, explosive) {
+    if (!rock.body || !explosive.body) return;
+    if (rock.body.velocity.y > 3 || explosive.body.velocity.y > 3) {
+      this.explodeBodies(rock, explosive);
+    }
+  }
+
+  handleLocustVsBlock(locust) {
+    if (!locust.body) return;
+    if (locust.body.velocity.y !== 0) {
+      locust.setVelocityY(-locust.body.velocity.y);
+    }
+    if (locust.body.velocity.x > 0) {
+      locust.setVelocityX(-locust.body.velocity.x);
+    }
+  }
+
+  handlePlayerVsKey(player, key) {
+    if (!key.active) return;
+    key.visible = false;
+    key.destroy();
+
+    if (this.door) {
+      this.door.play("door", true);
+    }
+  }
+
+  handleCapsuleVsPortal(capsule, portal) {
+    if (!this.portalOpen || !capsule.active) return;
+
+    capsule.visible = false;
+    capsule.destroy();
+    this.capsuleCount--;
+
+    if (this.capsuleCount <= 0) {
+      this.openPortal();
+    }
+  }
+
+  handlePlayerVsPortal(player, portal) {
+    if (!this.portalOpen) return;
+
+    this.portalOpen = false;
+    this.playerLevelWon.visible = true;
+    this.playerLevelWon.setPosition(this.player.x, this.player.y);
+    this.playerLevelWon.play(PLAYER_LEVEL_WON, true);
+    this.player.visible = false;
+    this.player.body.enable = false;
+  }
+
+  handleRockVsLocust(rock, locust) {
+    if (!rock.active || !locust.active) return;
+
+    this.explosion.setPosition(rock.x, rock.y);
+    rock.destroy();
+    locust.destroy();
+
+    this.explosion.visible = true;
+    this.showExplosion();
+    this.explosion.play("explosion", true);
+  }
+
+  explodeBodies(obj1, obj2) {
+    this.explosion.setPosition(obj1.x, obj1.y);
+
+    if (obj1?.active) {
+      obj1.visible = false;
+      obj1.destroy();
+    }
+
+    if (obj2?.active) {
+      obj2.visible = false;
+      obj2.destroy();
+    }
 
     this.explosion.visible = true;
     this.showExplosion();
@@ -691,13 +520,7 @@ export class GameScene extends Phaser.Scene {
         block.y > exp.y - exp.height &&
         block.y < exp.y + exp.height
       ) {
-        const bodyObj = block.bodyRef;
-        if (bodyObj) {
-          this.destroyPhysicsObject(bodyObj);
-        } else {
-          block.visible = false;
-          block.destroy();
-        }
+        block.destroy();
       }
     });
   }
@@ -757,20 +580,17 @@ export class GameScene extends Phaser.Scene {
     let blockY = BLOCK_SIZE + BLOCK_SIZE / 2;
     const gameWidth = this.scale.width;
 
+    this.blocks.clear(true, true);
+
     this.levelData.walls.forEach((block) => {
       if (block > 0) {
-        const sprite = this.add.sprite(blockX, blockY, "blocks")
+        const sprite = this.blocks.create(blockX, blockY, "blocks")
           .setOrigin(0.5)
           .setScale(0.78125)
           .setFrame(block);
 
-        const obj = this.createStaticBox(blockX, blockY, BLOCK_SIZE, BLOCK_SIZE, "Rectangle Body", sprite, {
-          friction: 0.4,
-          restitution: 0
-        });
-
-        sprite.bodyRef = obj;
-        this.blocks.add(sprite);
+        sprite.refreshBody();
+        sprite.label = "Rectangle Body";
       }
 
       blockX += BLOCK_SIZE;
@@ -822,18 +642,17 @@ export class GameScene extends Phaser.Scene {
 
     const playerX = this.levelData.player_position.x * BLOCK_SIZE - SPRITE_SIZE;
     const playerY = this.levelData.player_position.y * BLOCK_SIZE - SPRITE_SIZE;
-    this.playerObj.body.setTransform(pl.Vec2(this.pxToWorld(playerX), this.pxToWorld(playerY)), 0);
-    this.playerObj.body.setLinearVelocity(pl.Vec2(0, 0));
+    this.player.setPosition(playerX, playerY);
+    this.player.setVelocity(0, 0);
 
     const portalX = this.levelData.portal_position.x * BLOCK_SIZE - SPRITE_SIZE;
     const portalY = this.levelData.portal_position.y * BLOCK_SIZE - SPRITE_SIZE;
-    this.portalObj.body.setTransform(pl.Vec2(this.pxToWorld(portalX), this.pxToWorld(portalY)), 0);
-    this.portalOpenObj.body.setTransform(pl.Vec2(this.pxToWorld(portalX), this.pxToWorld(portalY)), 0);
+    this.portal.setPosition(portalX, portalY);
+    this.portalOpenSprite.setPosition(portalX, portalY);
 
     const keyX = this.levelData.key_position.x * BLOCK_SIZE - SPRITE_SIZE;
     const keyY = this.levelData.key_position.y * BLOCK_SIZE - SPRITE_SIZE;
-    this.keyObj.body.setTransform(pl.Vec2(this.pxToWorld(keyX), this.pxToWorld(keyY)), 0);
-    this.keySprite.setVisible(true);
+    this.keySprite.setPosition(keyX, keyY).setVisible(true);
 
     this.playerLevelWon.setPosition(0, 0);
 
@@ -842,20 +661,11 @@ export class GameScene extends Phaser.Scene {
         const x = rock.x * BLOCK_SIZE - SPRITE_SIZE;
         const y = rock.y * BLOCK_SIZE - SPRITE_SIZE;
 
-        const sprite = this.add.sprite(x, y, "rock")
+        const rock = this.rocks.create(x, y, "rock")
           .setScale(SPRITE_SCALE)
           .setOrigin(0.5);
 
-        const obj = this.createDynamicBox(x, y, 48, 48, "rock", sprite, {
-          density: 1,
-          friction: 0.3,
-          restitution: 0.4,
-          fixedRotation: false,
-          gravityScale: 1
-        });
-
-        sprite.bodyRef = obj;
-        this.rocks.add(sprite);
+        rock.setBounce(0.4);
       }
     });
 
@@ -864,21 +674,13 @@ export class GameScene extends Phaser.Scene {
         const x = locust.x * BLOCK_SIZE - SPRITE_SIZE;
         const y = locust.y * BLOCK_SIZE - SPRITE_SIZE;
 
-        const sprite = this.add.sprite(x, y, "locust")
+        const locust = this.locusts.create(x, y, "locust")
           .setScale(SPRITE_SCALE)
           .setOrigin(0.5);
 
-        const obj = this.createDynamicBox(x, y, 48, 48, "locust", sprite, {
-          density: 1,
-          friction: 0,
-          restitution: 0,
-          fixedRotation: true,
-          gravityScale: 0
-        });
-
-        obj.body.setLinearVelocity(pl.Vec2(0, 0.5 / SCALE));
-        sprite.bodyRef = obj;
-        this.locusts.add(sprite);
+        locust.body.setAllowGravity(false);
+        locust.body.setImmovable(false);
+        locust.setVelocity(0, 40);
       }
     });
 
@@ -887,20 +689,10 @@ export class GameScene extends Phaser.Scene {
         const x = bomb.x * BLOCK_SIZE - SPRITE_SIZE;
         const y = bomb.y * BLOCK_SIZE - SPRITE_SIZE;
 
-        const sprite = this.add.sprite(x, y, "explosive")
+        const tnt = this.explosives.create(x, y, "explosive")
           .setScale(SPRITE_SCALE)
           .setOrigin(0.5);
 
-        const obj = this.createDynamicBox(x, y, 46, 46, "explosive", sprite, {
-          density: 1,
-          friction: 0,
-          restitution: 0,
-          fixedRotation: true,
-          gravityScale: 1
-        });
-
-        sprite.bodyRef = obj;
-        this.explosives.add(sprite);
       }
     });
 
@@ -909,22 +701,13 @@ export class GameScene extends Phaser.Scene {
         const x = mummy.x * BLOCK_SIZE - SPRITE_SIZE;
         const y = mummy.y * BLOCK_SIZE - SPRITE_SIZE;
 
-        const sprite = this.add.sprite(x, y, "mummy")
+        const mummy = this.mummies.create(x, y, "mummy")
           .setScale(SPRITE_SCALE)
           .setOrigin(0.5);
 
-        const obj = this.createDynamicBox(x, y, 48, 48, "mummy", sprite, {
-          density: 1,
-          friction: 0,
-          restitution: 0,
-          fixedRotation: true,
-          gravityScale: 0
-        });
-
-        obj.speedX = 0;
-        obj.speedY = 0;
-        sprite.bodyRef = obj;
-        this.mummies.add(sprite);
+        mummy.body.setAllowGravity(false);
+        mummy.speedX = 0;
+        mummy.speedY = 0;
       }
     });
 
@@ -932,19 +715,16 @@ export class GameScene extends Phaser.Scene {
       const x = this.levelData.door_position.x * BLOCK_SIZE - SPRITE_SIZE;
       const y = this.levelData.door_position.y * BLOCK_SIZE - SPRITE_SIZE;
 
-      this.door = this.add.sprite(x, y, "door")
+      this.door = this.physics.add.staticSprite(x, y, "door")
         .setScale(SPRITE_SCALE)
         .setOrigin(0.5);
 
-      this.doorObj = this.createStaticBox(x, y, 50, 50, "door", this.door, {
-        friction: 0.2
-      });
+      this.door.refreshBody();
 
       this.door.off("animationcomplete");
       this.door.on("animationcomplete", () => {
-        this.destroyPhysicsObject(this.doorObj);
+        this.door.destroy();
         this.door = null;
-        this.doorObj = null;
       });
     }
 
@@ -952,31 +732,30 @@ export class GameScene extends Phaser.Scene {
       const x = capsule.x * BLOCK_SIZE - SPRITE_SIZE;
       const y = capsule.y * BLOCK_SIZE - SPRITE_SIZE;
 
-      const sprite = this.add.sprite(x, y, "capsule")
+      const newCapsule = this.capsules.create(x, y, "capsule")
         .setScale(0.34)
         .setOrigin(0.5);
 
-      const obj = this.createDynamicBox(x, y, 48, 48, "capsule", sprite, {
-        density: 1,
-        friction: 0.2,
-        restitution: 0,
-        fixedRotation: false,
-        gravityScale: 1
-      });
+      newCapsule.body.setAllowGravity(true);
+      newCapsule.body.setCollideWorldBounds(true);
 
-      sprite.play("capsule", true);
-      sprite.anims.setCurrentFrame(
+      // smaller collision body so it doesn't snag on corners
+      newCapsule.body.setCircle(65);
+
+      newCapsule.setBounce(0.2);
+      newCapsule.setDrag(10, 0);
+      newCapsule.setMaxVelocity(120, 240);
+
+      newCapsule.play("capsule", true);
+      newCapsule.anims.setCurrentFrame(
         this.anims.get("capsule").frames[Phaser.Math.Between(1, 5)]
       );
 
-      sprite.bodyRef = obj;
-      this.capsules.add(sprite);
       this.capsuleCount++;
     });
 
     this.player.visible = true;
     this.portal.visible = true;
-    this.syncPhysicsSprites();
   }
 
   cleanupLevelObjects() {
@@ -990,29 +769,7 @@ export class GameScene extends Phaser.Scene {
     ];
 
     groups.forEach((group) => {
-      group?.getChildren().forEach((child) => {
-        if (child.bodyRef) {
-          this.destroyPhysicsObject(child.bodyRef);
-        } else {
-          child.destroy();
-        }
-      });
-      group?.clear(false, false);
-    });
-
-    const extraObjects = [
-      "playerObj",
-      "portalObj",
-      "portalOpenObj",
-      "keyObj",
-      "doorObj"
-    ];
-
-    extraObjects.forEach((key) => {
-      if (this[key]) {
-        this.destroyPhysicsObject(this[key]);
-        this[key] = null;
-      }
+      group?.clear(true, true);
     });
 
     const sprites = [
@@ -1032,8 +789,6 @@ export class GameScene extends Phaser.Scene {
         this[key] = null;
       }
     });
-
-    this.flushDestroyedBodies();
   }
 
   showGlowEffect() {
@@ -1054,68 +809,55 @@ export class GameScene extends Phaser.Scene {
   }
 
   handlePlayerMovement() {
-    if (!this.playerObj || !this.player) return;
+    if (!this.player) return;
 
+    const speed = 180;
     let vx = 0;
     let vy = 0;
 
-    if (Phaser.Input.Keyboard.JustDown(this.keys.left)) {
-      vx = -PLAYER_SPEED / SCALE;
+    if (this.keys.left.isDown) {
+      vx = -speed;
       this.player.setFlipX(true);
       this.player.play("walk", true);
-    } else if (Phaser.Input.Keyboard.JustDown(this.keys.right)) {
-      vx = PLAYER_SPEED / SCALE;
+    } else if (this.keys.right.isDown) {
+      vx = speed;
       this.player.setFlipX(false);
       this.player.play("walk", true);
-    } else if (Phaser.Input.Keyboard.JustDown(this.keys.up)) {
-      vy = -PLAYER_SPEED / SCALE;
+    } else if (this.keys.up.isDown) {
+      vy = -speed;
       this.player.play("walk_up", true);
-    } else if (Phaser.Input.Keyboard.JustDown(this.keys.down)) {
-      vy = PLAYER_SPEED / SCALE;
+    } else if (this.keys.down.isDown) {
+      vy = speed;
       this.player.play("walk_down", true);
     } else {
       this.player.play("idle", true);
     }
 
-    this.playerObj.body.setLinearVelocity(pl.Vec2(vx, vy));
+    this.player.setVelocity(vx, vy);
   }
 
   handleMummies() {
-    this.mummies?.getChildren().forEach((mummySprite) => {
-      const mummyObj = mummySprite.bodyRef;
-      if (!mummyObj || !this.player) return;
+    this.mummies?.getChildren().forEach((mummy) => {
+      if (!mummy.body || !this.player) return;
 
-      if (this.player.x < mummySprite.x) {
-        mummyObj.speedX = -1 / SCALE;
-      } else if (this.player.x > mummySprite.x) {
-        mummyObj.speedX = 1 / SCALE;
+      if (this.player.x < mummy.x) {
+        mummy.speedX = -30;
+      } else if (this.player.x > mummy.x) {
+        mummy.speedX = 30;
       } else {
-        mummyObj.speedX = 0;
+        mummy.speedX = 0;
       }
 
-      if (this.player.y < mummySprite.y) {
-        mummyObj.speedY = -1 / SCALE;
-      } else if (this.player.y > mummySprite.y) {
-        mummyObj.speedY = 1 / SCALE;
+      if (this.player.y < mummy.y) {
+        mummy.speedY = -30;
+      } else if (this.player.y > mummy.y) {
+        mummy.speedY = 30;
       } else {
-        mummyObj.speedY = 0;
+        mummy.speedY = 0;
       }
 
-      mummyObj.body.setLinearVelocity(pl.Vec2(mummyObj.speedX, mummyObj.speedY));
+      mummy.setVelocity(mummy.speedX, mummy.speedY);
     });
-  }
-
-  stepPhysics(delta) {
-    const dt = Math.min(delta / 1000, 0.05);
-    this.accumulator += dt;
-
-    while (this.accumulator >= FIXED_DT) {
-      this.world.step(FIXED_DT, VELOCITY_ITERS, POSITION_ITERS);
-      this.accumulator -= FIXED_DT;
-      this.flushDestroyedBodies();
-    }
-
-    this.syncPhysicsSprites();
   }
 
   update(time, delta) {
@@ -1124,6 +866,13 @@ export class GameScene extends Phaser.Scene {
         if (Phaser.Input.Keyboard.JustDown(this.keys.space)) {
           this.bumpLevel();
         }
+        break;
+      case GAME_STATE.LEVEL_INTRO:
+        if (Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+          this.gameState = GAME_STATE.LEVEL;
+          this.startLevel();
+        };
+        break;
       case GAME_STATE.INTERMISSION:
         if (this.glow1 && this.glow2) {
           this.showGlowEffect();
@@ -1135,7 +884,6 @@ export class GameScene extends Phaser.Scene {
 
         this.handlePlayerMovement();
         this.handleMummies();
-        this.stepPhysics(delta);
         this.updateStats();
         break;
 
