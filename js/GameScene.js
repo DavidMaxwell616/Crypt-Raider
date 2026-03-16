@@ -49,7 +49,7 @@ export class GameScene extends Phaser.Scene {
       frameHeight: 32
     });
     this.load.spritesheet("rock", "assets/spritesheets/rock.png", {
-      frameWidth: 57,
+      frameWidth: 32,
       frameHeight: 32
     });
     this.load.spritesheet("locust", "assets/spritesheets/locust.png", {
@@ -400,8 +400,12 @@ export class GameScene extends Phaser.Scene {
 
     // solid collisions
     this.physics.add.collider(this.player, this.blocks, this.handlePlayerVsBlock, null, this);
-    this.physics.add.collider(this.capsules, this.blocks);
     this.physics.add.collider(this.player, this.capsules);
+    this.physics.add.collider(this.player, this.rocks);
+
+
+    this.physics.add.collider(this.capsules, this.blocks);
+    this.physics.add.collider(this.capsules, this.rocks);
 
     this.physics.add.collider(this.rocks, this.blocks);
     this.physics.add.collider(this.explosives, this.blocks, this.handleExplosiveVsBlock, null, this);
@@ -457,7 +461,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   handleCapsuleVsPortal(portal, capsule) {
-    let distance = Phaser.Math.Distance.BetweenPoints(portal, capsule);
+    let distance = Math.abs(portal.x - capsule.x);
     if (!this.portalOpen && distance > 4) return;
 
     capsule.visible = false;
@@ -623,6 +627,11 @@ export class GameScene extends Phaser.Scene {
         break;
 
       case GAME_STATE.LEVEL:
+        if (this.glow1) this.glow1.visible = false;
+        if (this.glow2) this.glow2.visible = false;
+        if (this.splash) this.splash.visible = false;
+        if (this.startButton) this.startButton.visible = false;
+        if (this.levelComplete) this.levelComplete.visible = false;
         this.level++;
         this.gameState = GAME_STATE.LEVEL;
         this.startLevel();
@@ -665,8 +674,9 @@ export class GameScene extends Phaser.Scene {
         const newRock = this.rocks.create(x, y, "rock")
           .setScale(SPRITE_SCALE)
           .setOrigin(0.5);
-
-        newRock.setBounce(0.4);
+        newRock.body.setCircle(16);
+        newRock.setDrag(10, 0);
+        newRock.setMaxVelocity(120, 240);
       }
     });
 
@@ -675,13 +685,13 @@ export class GameScene extends Phaser.Scene {
         const x = locust.x * BLOCK_SIZE - SPRITE_SIZE;
         const y = locust.y * BLOCK_SIZE - SPRITE_SIZE;
 
-        const locust = this.locusts.create(x, y, "locust")
+        const newLocust = this.locusts.create(x, y, "locust")
           .setScale(SPRITE_SCALE)
           .setOrigin(0.5);
 
-        locust.body.setAllowGravity(false);
-        locust.body.setImmovable(false);
-        locust.setVelocity(0, 40);
+        newLocust.body.setAllowGravity(false);
+        newLocust.body.setImmovable(false);
+        newLocust.setVelocity(0, 40);
       }
     });
 
@@ -702,13 +712,13 @@ export class GameScene extends Phaser.Scene {
         const x = mummy.x * BLOCK_SIZE - SPRITE_SIZE;
         const y = mummy.y * BLOCK_SIZE - SPRITE_SIZE;
 
-        const mummy = this.mummies.create(x, y, "mummy")
+        const newMummy = this.mummies.create(x, y, "mummy")
           .setScale(SPRITE_SCALE)
           .setOrigin(0.5);
 
-        mummy.body.setAllowGravity(false);
-        mummy.speedX = 0;
-        mummy.speedY = 0;
+        newMummy.body.setAllowGravity(false);
+        newMummy.speedX = 0;
+        newMummy.speedY = 0;
       }
     });
 
@@ -743,7 +753,6 @@ export class GameScene extends Phaser.Scene {
       // smaller collision body so it doesn't snag on corners
       newCapsule.body.setCircle(65);
 
-      newCapsule.setBounce(0.2);
       newCapsule.setDrag(10, 0);
       newCapsule.setMaxVelocity(120, 240);
       newCapsule.play("capsule", true);
@@ -792,7 +801,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   showGlowEffect() {
-    const glowScale = this.gameState === GAME_STATE.INTRO ? 3 : 2;
+    const glowScale = this.gameState === GAME_STATE.INTRO ? 5 : 2;
 
     if (this.glow1.scale < 0.5 || this.glow1.scale > glowScale) {
       this.glow1Grow *= -1;
@@ -805,7 +814,6 @@ export class GameScene extends Phaser.Scene {
     this.glow2.scale += this.glow2Grow;
     this.glow1.angle++;
     this.glow2.angle++;
-    console.log(this.gameState);
   }
 
   handlePlayerMovement() {
@@ -877,6 +885,10 @@ export class GameScene extends Phaser.Scene {
         if (this.glow1 && this.glow2) {
           this.showGlowEffect();
         }
+        if (Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+          this.gameState = GAME_STATE.LEVEL;
+          this.bumpLevel();
+        };
         break;
 
       case GAME_STATE.LEVEL:
