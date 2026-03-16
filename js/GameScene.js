@@ -16,7 +16,7 @@ export class GameScene extends Phaser.Scene {
 
     this.gameState = GAME_STATE.INTRO;
 
-    this.level = 1;
+    this.level = 2;
     this.score = 0;
     this.lives = 3;
     this.timeLeft = 100;
@@ -456,8 +456,9 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  handleCapsuleVsPortal(capsule, portal) {
-    if (!this.portalOpen || !capsule.active) return;
+  handleCapsuleVsPortal(portal, capsule) {
+    let distance = Phaser.Math.Distance.BetweenPoints(portal, capsule);
+    if (!this.portalOpen && distance > 4) return;
 
     capsule.visible = false;
     capsule.destroy();
@@ -469,7 +470,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   handlePlayerVsPortal(player, portal) {
-    if (!this.portalOpen) return;
+    let distance = Math.abs(portal.x - player.x);
+    if (!this.portalOpen || distance > 4) return;
 
     this.portalOpen = false;
     this.playerLevelWon.visible = true;
@@ -558,7 +560,7 @@ export class GameScene extends Phaser.Scene {
     if (this.glow2) this.glow2.setScale(0.75);
     if (this.splash) this.splash.setScale(0.75);
 
-    if (this.splash) this.splash.y -= 40;
+    if (this.splash) this.splash.y -= 100;
     if (this.glow1) this.glow1.y -= 40;
     if (this.glow2) this.glow2.y -= 40;
 
@@ -617,7 +619,6 @@ export class GameScene extends Phaser.Scene {
         if (this.glow2) this.glow2.visible = false;
         if (this.splash) this.splash.visible = false;
         if (this.startButton) this.startButton.visible = false;
-
         this.startLevel();
         break;
 
@@ -661,11 +662,11 @@ export class GameScene extends Phaser.Scene {
         const x = rock.x * BLOCK_SIZE - SPRITE_SIZE;
         const y = rock.y * BLOCK_SIZE - SPRITE_SIZE;
 
-        const rock = this.rocks.create(x, y, "rock")
+        const newRock = this.rocks.create(x, y, "rock")
           .setScale(SPRITE_SCALE)
           .setOrigin(0.5);
 
-        rock.setBounce(0.4);
+        newRock.setBounce(0.4);
       }
     });
 
@@ -745,7 +746,6 @@ export class GameScene extends Phaser.Scene {
       newCapsule.setBounce(0.2);
       newCapsule.setDrag(10, 0);
       newCapsule.setMaxVelocity(120, 240);
-
       newCapsule.play("capsule", true);
       newCapsule.anims.setCurrentFrame(
         this.anims.get("capsule").frames[Phaser.Math.Between(1, 5)]
@@ -753,9 +753,9 @@ export class GameScene extends Phaser.Scene {
 
       this.capsuleCount++;
     });
-
     this.player.visible = true;
     this.portal.visible = true;
+    this.portal.depth = 1;
   }
 
   cleanupLevelObjects() {
@@ -792,20 +792,20 @@ export class GameScene extends Phaser.Scene {
   }
 
   showGlowEffect() {
-    const glowScale = this.gameState === GAME_STATE.INTRO ? 3 : 1;
+    const glowScale = this.gameState === GAME_STATE.INTRO ? 3 : 2;
 
-    if (this.glow1.scale < 0 || this.glow1.scale > glowScale) {
-      this.glow1Grow *= -0.25;
+    if (this.glow1.scale < 0.5 || this.glow1.scale > glowScale) {
+      this.glow1Grow *= -1;
     }
 
-    if (this.glow2.scale < 0 || this.glow2.scale > glowScale) {
-      this.glow2Grow *= -0.25;
+    if (this.glow2.scale < 0.5 || this.glow2.scale > glowScale) {
+      this.glow2Grow *= -1;
     }
-
     this.glow1.scale += this.glow1Grow;
     this.glow2.scale += this.glow2Grow;
     this.glow1.angle++;
     this.glow2.angle++;
+    console.log(this.gameState);
   }
 
   handlePlayerMovement() {
