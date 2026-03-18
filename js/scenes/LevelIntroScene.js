@@ -73,7 +73,7 @@ export class LevelIntroScene extends Phaser.Scene {
             .setOrigin(0)
             .setScale(0.4)
             .setInteractive()
-            .on("pointerdown", () => this.scene.start("PlayScene"));
+            .on("pointerdown", () => this.scene.start("GameScene"));
 
         startButton.play("capsule", true);
 
@@ -91,7 +91,7 @@ export class LevelIntroScene extends Phaser.Scene {
 
     update() {
         if (Phaser.Input.Keyboard.JustDown(this.keys.space)) {
-            this.scene.start("PlayScene");
+            this.scene.start("GameScene");
         }
     }
 }

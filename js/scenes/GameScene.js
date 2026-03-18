@@ -518,6 +518,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   handlePlayerVsPortal(player, portal) {
+    console.log('player hit portal');
     let distance = Math.abs(portal.x - player.x);
 
     if (!this.portalOpen || distance > 4) return;
