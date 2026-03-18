@@ -72,7 +72,7 @@
     "explosive_position": [{"x": 0,"y":0}], 
     "player_position": {"x": 6,"y":6}, 
     "portal_position": {"x": 17,"y":4},
-    "rock_position": [{"x": 8,"y":2}], 
+    "rock_position": [{"x": 9,"y":3}], 
     "mummy_position": [{"x": 0,"y":0}], 
     "locust_position": [{"x": 10,"y":10,"xv": 0,"yv":1}], 
     "door_position": {"x": 13,"y":3},

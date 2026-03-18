@@ -1,14 +1,16 @@
 import {
   BLOCK_SIZE,
   SPRITE_SIZE,
-  PLAYER_SPEED,
   GAME_STATE,
   LEVEL_CODES,
   PLAYER_LEVEL_INTRO,
   PLAYER_LEVEL_WON,
   SPRITE_SCALE,
-  BLOCK_TYPES
-} from "./config.js";
+  BLOCK_TYPES,
+  GAME_WIDTH,
+  GAME_HEIGHT,
+  YELLOW
+} from "../config.js";
 
 export class GameScene extends Phaser.Scene {
   constructor() {
@@ -16,13 +18,13 @@ export class GameScene extends Phaser.Scene {
 
     this.gameState = GAME_STATE.INTRO;
 
-    this.level = 2;
+    this.level = 1;
     this.score = 0;
     this.lives = 3;
-    this.timeLeft = 100;
+    this.timeLeft = 34;
     this.capsuleCount = 0;
     this.portalOpen = false;
-
+    this.timerEvent = null;
     this.objectData = null;
     this.levelData = null;
 
@@ -109,7 +111,6 @@ export class GameScene extends Phaser.Scene {
     this.mummies = this.physics.add.group();
     this.capsules = this.physics.add.group();
     this.explosives = this.physics.add.group();
-    this.infoGroup = this.add.group();
 
     this.objectData = this.cache.json.get("levelData");
 
@@ -250,42 +251,44 @@ export class GameScene extends Phaser.Scene {
       case GAME_STATE.LEVEL_INTRO:
         this.backgroundImage = this.add.image(0, 0, "background").setOrigin(0);
 
-        this.infoGroup.clear(true, true);
-
-        this.infoGroup.add(this.add.text(BLOCK_SIZE + 30, 10, "LEVEL: " + this.level, {
+        this.levelText = this.add.text(BLOCK_SIZE + 30, 10, "LEVEL: " + this.level, {
           fontFamily: "impact",
           fontSize: "24px",
-          color: "yellow"
-        }));
+          color: YELLOW
+        });
 
-        this.infoGroup.add(this.add.text(BLOCK_SIZE * 4 + 20, 10, "SCORE: " + this.score, {
+        this.scoreText = this.add.text(BLOCK_SIZE * 4 + 20, 10, "SCORE: " + this.score, {
           fontFamily: "impact",
           fontSize: "24px",
-          color: "yellow"
-        }));
+          color: YELLOW
+        });
 
-        this.infoGroup.add(this.add.text(BLOCK_SIZE * 7 + 20, 10, "LIVES: " + this.lives, {
+        this.scoreText2 = this.add.text(GAME_WIDTH * .6, GAME_HEIGHT * .8, {
+          fontFamily: "Times New Roman",
+          fontSize: "24px",
+          color: YELLOW
+        });
+
+        this.livesText = this.add.text(BLOCK_SIZE * 7 + 20, 10, "LIVES: " + this.lives, {
           fontFamily: "impact",
           fontSize: "24px",
-          color: "yellow"
-        }));
+          color: YELLOW
+        });
 
-        this.infoGroup.add(this.add.text(BLOCK_SIZE * 10 + 20, 10, "TIME: " + this.timeLeft, {
+        this.timeLeftText = this.add.text(BLOCK_SIZE * 10 + 20, 10, "TIME: " + this.timeLeft, {
           fontFamily: "impact",
           fontSize: "24px",
-          color: "yellow"
-        }));
-
+          color: YELLOW
+        });
+        this.timeLeftText2 = this.add.text(GAME_WIDTH * .6, GAME_HEIGHT * .745, this.timeLeft,
+          {
+            fontFamily: "Times New Roman",
+            fontSize: "24px",
+            color: YELLOW
+          });
         this.getReady = this.add.image(BLOCK_SIZE * 4.9, BLOCK_SIZE * 4, "level intro")
           .setOrigin(0)
           .setScale(1.45, 1.7);
-
-        this.levelText = this.add.text(BLOCK_SIZE * 6, BLOCK_SIZE * 6, "LEVEL: " + this.level, {
-          fontFamily: "courier new",
-          fontSize: "24px",
-          fontWeight: "bold",
-          color: "white"
-        });
 
         this.levelCode = this.add.text(
           BLOCK_SIZE * 6,
@@ -361,8 +364,8 @@ export class GameScene extends Phaser.Scene {
         this.explosion.visible = false;
 
         this.portal = this.physics.add.sprite(0, 0, "portal")
-          .setScale(1.72)
           .setOrigin(0.5)
+          .setDisplaySize(BLOCK_SIZE, BLOCK_SIZE)
           .setImmovable(true);
 
         this.portal.body.setAllowGravity(false);
@@ -372,6 +375,8 @@ export class GameScene extends Phaser.Scene {
           .setScale(1.3)
           .setOrigin(0.5);
         this.playerLevelWon.visible = false;
+        this.timeLeftText2.visible = false;
+        this.scoreText2.visible = false;
         this.playerLevelWon.off("animationcomplete");
         this.playerLevelWon.on("animationcomplete", (animation) => {
           if (animation.key === PLAYER_LEVEL_WON) {
@@ -393,6 +398,44 @@ export class GameScene extends Phaser.Scene {
       default:
         break;
     }
+
+    // reset time if needed
+    this.timeLeft = 34;
+
+    // kill any previous timer (important!)
+    if (this.timerEvent) {
+      this.timerEvent.remove(false);
+    }
+
+    // create repeating timer
+    this.timerEvent = this.time.addEvent({
+      delay: 1000,
+      loop: true,
+      callback: () => {
+        // only count down during active gameplay
+        if (this.gameState !== GAME_STATE.LEVEL) return;
+
+        if (this.timeLeft > 0) {
+          this.timeLeft--;
+          this.updateStats();
+        }
+
+        if (this.timeLeft <= 0) {
+          this.timeLeft = 0;
+
+          // stop timer
+          this.timerEvent.remove(false);
+          this.timerEvent = null;
+
+          console.log("TIME UP");
+
+          // example behavior:
+          // this.lives--;
+          // this.gameState = GAME_STATE.LEVEL_INTRO;
+          // this.startLevel();
+        }
+      }
+    });
   }
 
   registerArcadeColliders() {
@@ -402,7 +445,9 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.blocks, this.handlePlayerVsBlock, null, this);
     this.physics.add.collider(this.player, this.capsules);
     this.physics.add.collider(this.player, this.rocks);
-
+    this.physics.add.collider(this.player, this.door);
+    this.physics.add.overlap(this.player, this.portal, this.handlePlayerVsPortal, null, this);
+    this.physics.add.collider(this.player, this.portal);
 
     this.physics.add.collider(this.capsules, this.blocks);
     this.physics.add.collider(this.capsules, this.rocks);
@@ -415,7 +460,6 @@ export class GameScene extends Phaser.Scene {
     // trigger overlaps
     this.physics.add.overlap(this.player, this.keySprite, this.handlePlayerVsKey, null, this);
     this.physics.add.overlap(this.capsules, this.portal, this.handleCapsuleVsPortal, null, this);
-    this.physics.add.overlap(this.player, this.portal, this.handlePlayerVsPortal, null, this);
     this.physics.add.overlap(this.rocks, this.locusts, this.handleRockVsLocust, null, this);
   }
 
@@ -475,6 +519,7 @@ export class GameScene extends Phaser.Scene {
 
   handlePlayerVsPortal(player, portal) {
     let distance = Math.abs(portal.x - player.x);
+
     if (!this.portalOpen || distance > 4) return;
 
     this.portalOpen = false;
@@ -546,12 +591,14 @@ export class GameScene extends Phaser.Scene {
     this.capsules.clear(true, true);
     this.explosives.clear(true, true);
 
-    this.infoGroup.getChildren().forEach((child) => {
-      child.visible = false;
-    });
+    this.scoreText.visible = false;
+    this.scoreText2.visible = true;
+    this.timeLeftText.visible = false;
+    this.timeLeftText2.visible = true;
+    this.livesText.visible = false;
+    this.levelText.visible = false;
 
     if (this.portal) this.portal.visible = false;
-    if (this.levelText) this.levelText.visible = false;
     if (this.backgroundImage) this.backgroundImage.visible = false;
     if (this.portalOpenSprite) this.portalOpenSprite.visible = false;
 
@@ -564,20 +611,24 @@ export class GameScene extends Phaser.Scene {
     if (this.glow2) this.glow2.setScale(0.75);
     if (this.splash) this.splash.setScale(0.75);
 
-    if (this.splash) this.splash.y -= 100;
-    if (this.glow1) this.glow1.y -= 40;
-    if (this.glow2) this.glow2.y -= 40;
+    if (this.splash) this.splash.y = 120;
+    if (this.glow1) this.glow1.y = 80;
+    if (this.glow2) this.glow2.y = 80;
 
     this.gameState = GAME_STATE.INTERMISSION;
   }
 
   updateStats() {
-    const children = this.infoGroup.getChildren();
-    if (children[0]) children[0].setText("LEVEL: " + this.level);
-    if (children[1]) children[1].setText("SCORE: " + this.score);
-    if (children[2]) children[2].setText("LIVES: " + this.lives);
-    if (children[3]) children[3].setText("TIME: " + this.timeLeft);
+
+    this.levelText.setText("LEVEL: " + this.level);
+    this.scoreText.setText("SCORE: " + this.score);
+    this.scoreText2.setText(this.padZeros(this.score, 4));
+    this.livesText.setText("LIVES: " + this.lives);
+    this.timeLeftText.setText("TIME: " + this.timeLeft);
+    this.timeLeftText2.setText(this.padZeros(this.timeLeft, 4));
   }
+
+  padZeros = (num, targetLength) => String(num).padStart(targetLength, '0');
 
   renderBlocks() {
     if (!this.levelData?.walls) return;
@@ -802,7 +853,6 @@ export class GameScene extends Phaser.Scene {
 
   showGlowEffect() {
     const glowScale = this.gameState === GAME_STATE.INTRO ? 5 : 2;
-
     if (this.glow1.scale < 0.5 || this.glow1.scale > glowScale) {
       this.glow1Grow *= -1;
     }
@@ -868,18 +918,27 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  update(time, delta) {
+  update(delta) {
     switch (this.gameState) {
       case GAME_STATE.INTRO:
+        if (this.glow1 && this.glow2) {
+          this.showGlowEffect();
+        }
         if (Phaser.Input.Keyboard.JustDown(this.keys.space)) {
           this.bumpLevel();
         }
         break;
       case GAME_STATE.LEVEL_INTRO:
-        if (Phaser.Input.Keyboard.JustDown(this.keys.space)) {
-          this.gameState = GAME_STATE.LEVEL;
-          this.startLevel();
-        };
+        if (this.level > 1 && this.timeLeft > 0) {
+          this.timeLeft--;
+          this.score++;
+        }
+        else {
+          if (Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+            this.gameState = GAME_STATE.LEVEL;
+            this.startLevel();
+          };
+        }
         break;
       case GAME_STATE.INTERMISSION:
         if (this.glow1 && this.glow2) {
@@ -896,6 +955,28 @@ export class GameScene extends Phaser.Scene {
 
         this.handlePlayerMovement();
         this.handleMummies();
+
+        this.timeAccumulator += delta;
+
+        while (this.timeAccumulator >= 1000) {
+          this.timeAccumulator -= 1000;
+
+          if (this.timeLeft > 0) {
+            this.timeLeft--;
+          }
+
+          if (this.timeLeft <= 0) {
+            this.timeLeft = 0;
+
+            // timeout behavior
+            // this.lives--;
+            // this.gameState = GAME_STATE.LEVEL_INTRO;
+            // this.startLevel();
+
+            break;
+          }
+        }
+
         this.updateStats();
         break;
 

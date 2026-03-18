@@ -1,0 +1,88 @@
+import {
+    GAME_STATE
+} from "../config.js";
+import { createAnimations } from "../AnimationFactory.js";
+
+export class BootScene extends Phaser.Scene {
+    constructor() {
+        super("BootScene");
+    }
+
+    preload() {
+        this.load.image("splash", "assets/images/crypt raider title.svg");
+        this.load.image("glow", "assets/images/glow.png");
+        this.load.image("level intro", "assets/images/get ready.png");
+        this.load.image("background", "assets/images/background.png");
+        this.load.spritesheet("blocks", "assets/spritesheets/blocks.png", {
+            frameWidth: 64,
+            frameHeight: 64
+        });
+        this.load.image("start button", "assets/images/start button.png");
+        this.load.image("level complete", "assets/images/level complete.png");
+        this.load.image("portal", "assets/images/portal.png");
+        this.load.spritesheet("door", "assets/spritesheets/door.png", {
+            frameWidth: 32,
+            frameHeight: 32
+        });
+        this.load.spritesheet("rock", "assets/spritesheets/rock.png", {
+            frameWidth: 32,
+            frameHeight: 32
+        });
+        this.load.spritesheet("locust", "assets/spritesheets/locust.png", {
+            frameWidth: 32,
+            frameHeight: 32
+        });
+        this.load.spritesheet("mummy", "assets/spritesheets/mummy.png", {
+            frameWidth: 32,
+            frameHeight: 32
+        });
+        this.load.spritesheet("portal open", "assets/spritesheets/portal open.png", {
+            frameWidth: 64,
+            frameHeight: 60
+        });
+        this.load.spritesheet("player level won", "assets/spritesheets/player level won.png", {
+            frameWidth: 61,
+            frameHeight: 85
+        });
+        this.load.spritesheet("player", "assets/spritesheets/player.png", {
+            frameWidth: 27,
+            frameHeight: 32
+        });
+        this.load.spritesheet("capsule", "assets/spritesheets/capsule.png", {
+            frameWidth: 130,
+            frameHeight: 130
+        });
+        this.load.spritesheet("explosion", "assets/spritesheets/explosion.png", {
+            frameWidth: 98,
+            frameHeight: 98
+        });
+        this.load.spritesheet("explosive", "assets/spritesheets/explosive.png", {
+            frameWidth: 58,
+            frameHeight: 32
+        });
+        this.load.spritesheet("player_intro", "assets/spritesheets/player_intro.png", {
+            frameWidth: 87,
+            frameHeight: 95
+        });
+        this.load.spritesheet("key", "assets/spritesheets/key.png", {
+            frameWidth: 30,
+            frameHeight: 27
+        });
+
+        this.load.path = "../assets/json/";
+        this.load.json("levelData", "level_data.json");
+    }
+
+    create() {
+        createAnimations(this);
+
+        this.registry.set("gameState", GAME_STATE.INTRO);
+        this.registry.set("level", 1);
+        this.registry.set("score", 0);
+        this.registry.set("lives", 3);
+        this.registry.set("timeLeft", 34);
+        this.registry.set("portalOpen", false);
+
+        this.scene.start("IntroScene");
+    }
+}

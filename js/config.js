@@ -5,6 +5,7 @@ export const GAME_STATE = {
     INTERMISSION: 3,
     GAME_OVER: 4
 };
+export const YELLOW = "#FFDF00"
 export const BLOCK_SIZE = 50;
 export const SPRITE_SIZE = 25;
 export const GAME_WIDTH = 900;
