@@ -6,11 +6,9 @@ import {
   PLAYER_LEVEL_INTRO,
   PLAYER_LEVEL_WON,
   SPRITE_SCALE,
-  BLOCK_TYPES,
-  GAME_WIDTH,
-  GAME_HEIGHT,
-  YELLOW
-} from "../config.js";
+  BLOCK_TYPES
+} from "./config.js";
+import { createAnimations } from "./Animations.js";
 
 export class GameScene extends Phaser.Scene {
   constructor() {
@@ -21,7 +19,7 @@ export class GameScene extends Phaser.Scene {
     this.level = 1;
     this.score = 0;
     this.lives = 3;
-    this.timeLeft = 34;
+    this.timeLeft = 32;
     this.capsuleCount = 0;
     this.portalOpen = false;
     this.timerEvent = null;
@@ -46,11 +44,9 @@ export class GameScene extends Phaser.Scene {
     this.load.image("start button", "assets/images/start button.png");
     this.load.image("level complete", "assets/images/level complete.png");
     this.load.image("portal", "assets/images/portal.png");
+    this.load.image("rock", "assets/images/rock.png");
+    this.load.image("explosive", "assets/images/explosive.png");
     this.load.spritesheet("door", "assets/spritesheets/door.png", {
-      frameWidth: 32,
-      frameHeight: 32
-    });
-    this.load.spritesheet("rock", "assets/spritesheets/rock.png", {
       frameWidth: 32,
       frameHeight: 32
     });
@@ -82,10 +78,7 @@ export class GameScene extends Phaser.Scene {
       frameWidth: 98,
       frameHeight: 98
     });
-    this.load.spritesheet("explosive", "assets/spritesheets/explosive.png", {
-      frameWidth: 58,
-      frameHeight: 32
-    });
+
     this.load.spritesheet(PLAYER_LEVEL_INTRO, "assets/spritesheets/player_intro.png", {
       frameWidth: 87,
       frameHeight: 95
@@ -114,7 +107,8 @@ export class GameScene extends Phaser.Scene {
 
     this.objectData = this.cache.json.get("levelData");
 
-    this.createAnimations();
+    createAnimations(this);
+
     this.keys = this.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.UP,
       down: Phaser.Input.Keyboard.KeyCodes.DOWN,
@@ -124,98 +118,6 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.startLevel();
-  }
-
-  createAnimations() {
-    if (!this.anims.exists("capsule")) {
-      this.anims.create({
-        key: "capsule",
-        frames: this.anims.generateFrameNumbers("capsule"),
-        frameRate: 8,
-        repeat: -1
-      });
-    }
-
-    if (!this.anims.exists("portal open")) {
-      this.anims.create({
-        key: "portal open",
-        frames: this.anims.generateFrameNumbers("portal open"),
-        frameRate: 8,
-        repeat: -1
-      });
-    }
-
-    if (!this.anims.exists("explosion")) {
-      this.anims.create({
-        key: "explosion",
-        frames: this.anims.generateFrameNumbers("explosion"),
-        frameRate: 8,
-        repeat: 0
-      });
-    }
-
-    if (!this.anims.exists("walk")) {
-      this.anims.create({
-        key: "walk",
-        frames: this.anims.generateFrameNumbers("player", { frames: [4, 5, 6] }),
-        frameRate: 8,
-        repeat: -1
-      });
-    }
-
-    if (!this.anims.exists("idle")) {
-      this.anims.create({
-        key: "idle",
-        frames: this.anims.generateFrameNumbers("player", { frames: [0] }),
-        frameRate: 8,
-        repeat: -1
-      });
-    }
-
-    if (!this.anims.exists("walk_down")) {
-      this.anims.create({
-        key: "walk_down",
-        frames: this.anims.generateFrameNumbers("player", { frames: [0, 1, 2, 3] }),
-        frameRate: 8,
-        repeat: -1
-      });
-    }
-
-    if (!this.anims.exists("walk_up")) {
-      this.anims.create({
-        key: "walk_up",
-        frames: this.anims.generateFrameNumbers("player", { frames: [8, 9, 10] }),
-        frameRate: 8,
-        repeat: -1
-      });
-    }
-
-    if (!this.anims.exists(PLAYER_LEVEL_WON)) {
-      this.anims.create({
-        key: PLAYER_LEVEL_WON,
-        frames: this.anims.generateFrameNumbers(PLAYER_LEVEL_WON),
-        frameRate: 8,
-        repeat: 0
-      });
-    }
-
-    if (!this.anims.exists(PLAYER_LEVEL_INTRO)) {
-      this.anims.create({
-        key: PLAYER_LEVEL_INTRO,
-        frames: this.anims.generateFrameNumbers(PLAYER_LEVEL_INTRO),
-        frameRate: 16,
-        repeat: -1
-      });
-    }
-
-    if (!this.anims.exists("door")) {
-      this.anims.create({
-        key: "door",
-        frames: this.anims.generateFrameNumbers("door"),
-        frameRate: 16,
-        repeat: 0
-      });
-    }
   }
 
   startLevel() {
@@ -357,7 +259,34 @@ export class GameScene extends Phaser.Scene {
         this.keySprite.body.setAllowGravity(false);
         this.keySprite.visible = false;
         this.keySprite.label = "key";
+        // reset timer
+        this.timeLeft = 34;
 
+        // remove old timer
+        if (this.timerEvent) {
+          this.timerEvent.remove(false);
+        }
+
+        // create repeating timer
+        this.timerEvent = this.time.addEvent({
+          delay: 1000,
+          loop: true,
+          callback: () => {
+
+            if (this.gameState !== GAME_STATE.LEVEL) return;
+
+            this.timeLeft--;
+
+            if (this.timeLeft <= 0) {
+              this.timeLeft = 0;
+
+              this.timerEvent.remove(false);
+              this.timerEvent = null;
+
+              console.log("TIME UP");
+            }
+          }
+        });
         this.explosion = this.add.sprite(0, 0, "explosion")
           .setScale(1.72)
           .setOrigin(0.5);
@@ -441,13 +370,9 @@ export class GameScene extends Phaser.Scene {
   registerArcadeColliders() {
     if (!this.player) return;
 
-    // solid collisions
     this.physics.add.collider(this.player, this.blocks, this.handlePlayerVsBlock, null, this);
     this.physics.add.collider(this.player, this.capsules);
     this.physics.add.collider(this.player, this.rocks);
-    this.physics.add.collider(this.player, this.door);
-    this.physics.add.overlap(this.player, this.portal, this.handlePlayerVsPortal, null, this);
-    this.physics.add.collider(this.player, this.portal);
 
     this.physics.add.collider(this.capsules, this.blocks);
     this.physics.add.collider(this.capsules, this.rocks);
@@ -457,7 +382,6 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.rocks, this.explosives, this.handleRockVsExplosive, null, this);
     this.physics.add.collider(this.locusts, this.blocks, this.handleLocustVsBlock, null, this);
 
-    // trigger overlaps
     this.physics.add.overlap(this.player, this.keySprite, this.handlePlayerVsKey, null, this);
     this.physics.add.overlap(this.capsules, this.portal, this.handleCapsuleVsPortal, null, this);
     this.physics.add.overlap(this.rocks, this.locusts, this.handleRockVsLocust, null, this);
@@ -612,9 +536,9 @@ export class GameScene extends Phaser.Scene {
     if (this.glow2) this.glow2.setScale(0.75);
     if (this.splash) this.splash.setScale(0.75);
 
-    if (this.splash) this.splash.y = 120;
-    if (this.glow1) this.glow1.y = 80;
-    if (this.glow2) this.glow2.y = 80;
+    if (this.splash) this.splash.y = 150;
+    if (this.glow1) this.glow1.y -= 40;
+    if (this.glow2) this.glow2.y -= 40;
 
     this.gameState = GAME_STATE.INTERMISSION;
   }
@@ -755,7 +679,6 @@ export class GameScene extends Phaser.Scene {
         const tnt = this.explosives.create(x, y, "explosive")
           .setScale(SPRITE_SCALE)
           .setOrigin(0.5);
-
       }
     });
 
@@ -801,8 +724,6 @@ export class GameScene extends Phaser.Scene {
 
       newCapsule.body.setAllowGravity(true);
       newCapsule.body.setCollideWorldBounds(true);
-
-      // smaller collision body so it doesn't snag on corners
       newCapsule.body.setCircle(65);
 
       newCapsule.setDrag(10, 0);
@@ -814,6 +735,7 @@ export class GameScene extends Phaser.Scene {
 
       this.capsuleCount++;
     });
+
     this.player.visible = true;
     this.portal.visible = true;
     this.portal.depth = 1;
@@ -861,6 +783,7 @@ export class GameScene extends Phaser.Scene {
     if (this.glow2.scale < 0.5 || this.glow2.scale > glowScale) {
       this.glow2Grow *= -1;
     }
+
     this.glow1.scale += this.glow1Grow;
     this.glow2.scale += this.glow2Grow;
     this.glow1.angle++;
@@ -929,18 +852,14 @@ export class GameScene extends Phaser.Scene {
           this.bumpLevel();
         }
         break;
+
       case GAME_STATE.LEVEL_INTRO:
-        if (this.level > 1 && this.timeLeft > 0) {
-          this.timeLeft--;
-          this.score++;
-        }
-        else {
-          if (Phaser.Input.Keyboard.JustDown(this.keys.space)) {
-            this.gameState = GAME_STATE.LEVEL;
-            this.startLevel();
-          };
+        if (Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+          this.gameState = GAME_STATE.LEVEL;
+          this.startLevel();
         }
         break;
+
       case GAME_STATE.INTERMISSION:
         if (this.glow1 && this.glow2) {
           this.showGlowEffect();
@@ -948,7 +867,7 @@ export class GameScene extends Phaser.Scene {
         if (Phaser.Input.Keyboard.JustDown(this.keys.space)) {
           this.gameState = GAME_STATE.LEVEL;
           this.bumpLevel();
-        };
+        }
         break;
 
       case GAME_STATE.LEVEL:
