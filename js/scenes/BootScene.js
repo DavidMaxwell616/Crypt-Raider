@@ -83,6 +83,6 @@ export class BootScene extends Phaser.Scene {
         this.registry.set("timeLeft", 34);
         this.registry.set("portalOpen", false);
 
-        this.scene.start("IntroScene");
+        this.scene.start("GameScene");
     }
 }

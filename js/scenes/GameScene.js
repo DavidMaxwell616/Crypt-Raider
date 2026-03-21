@@ -6,9 +6,12 @@ import {
   PLAYER_LEVEL_INTRO,
   PLAYER_LEVEL_WON,
   SPRITE_SCALE,
-  BLOCK_TYPES
-} from "./config.js";
-import { createAnimations } from "./Animations.js";
+  BLOCK_TYPES,
+  YELLOW,
+  GAME_WIDTH,
+  GAME_HEIGHT,
+} from "../config.js";
+import { createAnimations } from "../AnimationFactory.js";
 
 export class GameScene extends Phaser.Scene {
   constructor() {
@@ -30,66 +33,6 @@ export class GameScene extends Phaser.Scene {
     this.glow2Scale = 2.5;
     this.glow1Grow = 0.05;
     this.glow2Grow = 0.01;
-  }
-
-  preload() {
-    this.load.image("splash", "assets/images/crypt raider title.svg");
-    this.load.image("glow", "assets/images/glow.png");
-    this.load.image("level intro", "assets/images/get ready.png");
-    this.load.image("background", "assets/images/background.png");
-    this.load.spritesheet("blocks", "assets/spritesheets/blocks.png", {
-      frameWidth: 64,
-      frameHeight: 64
-    });
-    this.load.image("start button", "assets/images/start button.png");
-    this.load.image("level complete", "assets/images/level complete.png");
-    this.load.image("portal", "assets/images/portal.png");
-    this.load.image("rock", "assets/images/rock.png");
-    this.load.image("explosive", "assets/images/explosive.png");
-    this.load.spritesheet("door", "assets/spritesheets/door.png", {
-      frameWidth: 32,
-      frameHeight: 32
-    });
-    this.load.spritesheet("locust", "assets/spritesheets/locust.png", {
-      frameWidth: 32,
-      frameHeight: 32
-    });
-    this.load.spritesheet("mummy", "assets/spritesheets/mummy.png", {
-      frameWidth: 32,
-      frameHeight: 32
-    });
-    this.load.spritesheet("portal open", "assets/spritesheets/portal open.png", {
-      frameWidth: 64,
-      frameHeight: 60
-    });
-    this.load.spritesheet("player level won", "assets/spritesheets/player level won.png", {
-      frameWidth: 61,
-      frameHeight: 85
-    });
-    this.load.spritesheet("player", "assets/spritesheets/player.png", {
-      frameWidth: 27,
-      frameHeight: 32
-    });
-    this.load.spritesheet("capsule", "assets/spritesheets/capsule.png", {
-      frameWidth: 130,
-      frameHeight: 130
-    });
-    this.load.spritesheet("explosion", "assets/spritesheets/explosion.png", {
-      frameWidth: 98,
-      frameHeight: 98
-    });
-
-    this.load.spritesheet(PLAYER_LEVEL_INTRO, "assets/spritesheets/player_intro.png", {
-      frameWidth: 87,
-      frameHeight: 95
-    });
-    this.load.spritesheet("key", "assets/spritesheets/key.png", {
-      frameWidth: 30,
-      frameHeight: 27
-    });
-
-    this.load.path = "../assets/json/";
-    this.load.json("levelData", "level_data.json");
   }
 
   create() {

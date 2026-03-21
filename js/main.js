@@ -1,9 +1,6 @@
 import { GAME_WIDTH, GAME_HEIGHT } from "./config.js";
 import { BootScene } from "./scenes/BootScene.js";
-import { IntroScene } from "./scenes/IntroScene.js";
-import { LevelIntroScene } from "./scenes/LevelIntroScene.js";
 import { GameScene } from "./scenes/GameScene.js";
-import { IntermissionScene } from "./scenes/IntermissionScene.js";
 
 const config = {
     type: Phaser.AUTO,
@@ -19,10 +16,7 @@ const config = {
     },
     scene: [
         BootScene,
-        IntroScene,
         GameScene,
-        LevelIntroScene,
-        IntermissionScene
     ]
 };
 
