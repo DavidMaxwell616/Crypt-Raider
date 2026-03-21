@@ -19,7 +19,7 @@ export class GameScene extends Phaser.Scene {
     this.level = 1;
     this.score = 0;
     this.lives = 3;
-    this.timeLeft = 100;
+    this.timeLeft = 32;
     this.capsuleCount = 0;
     this.portalOpen = false;
 
@@ -258,7 +258,34 @@ export class GameScene extends Phaser.Scene {
         this.keySprite.body.setAllowGravity(false);
         this.keySprite.visible = false;
         this.keySprite.label = "key";
+        // reset timer
+        this.timeLeft = 34;
 
+        // remove old timer
+        if (this.timerEvent) {
+          this.timerEvent.remove(false);
+        }
+
+        // create repeating timer
+        this.timerEvent = this.time.addEvent({
+          delay: 1000,
+          loop: true,
+          callback: () => {
+
+            if (this.gameState !== GAME_STATE.LEVEL) return;
+
+            this.timeLeft--;
+
+            if (this.timeLeft <= 0) {
+              this.timeLeft = 0;
+
+              this.timerEvent.remove(false);
+              this.timerEvent = null;
+
+              console.log("TIME UP");
+            }
+          }
+        });
         this.explosion = this.add.sprite(0, 0, "explosion")
           .setScale(1.72)
           .setOrigin(0.5);
@@ -465,7 +492,7 @@ export class GameScene extends Phaser.Scene {
     if (this.glow2) this.glow2.setScale(0.75);
     if (this.splash) this.splash.setScale(0.75);
 
-    if (this.splash) this.splash.y -= 100;
+    if (this.splash) this.splash.y = 150;
     if (this.glow1) this.glow1.y -= 40;
     if (this.glow2) this.glow2.y -= 40;
 
