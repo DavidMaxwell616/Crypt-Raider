@@ -28,6 +28,10 @@ export class BootScene extends Phaser.Scene {
             frameWidth: 32,
             frameHeight: 32
         });
+        this.load.image("explosive", "assets/images/explosive.png", {
+            frameWidth: 32,
+            frameHeight: 32
+        });
         this.load.spritesheet("mummy", "assets/spritesheets/mummy.png", {
             frameWidth: 32,
             frameHeight: 32
@@ -57,10 +61,7 @@ export class BootScene extends Phaser.Scene {
             frameWidth: 98,
             frameHeight: 98
         });
-        this.load.spritesheet("explosive", "assets/spritesheets/explosive.png", {
-            frameWidth: 58,
-            frameHeight: 32
-        });
+
         this.load.spritesheet("player_level_intro", "assets/spritesheets/player_intro.png", {
             frameWidth: 87,
             frameHeight: 95

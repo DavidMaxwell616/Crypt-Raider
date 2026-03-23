@@ -16,7 +16,7 @@ export class GameScene extends Phaser.Scene {
     super("GameScene");
 
     this.gameState = GAME_STATE.INTRO;
-    this.level = 3;
+    this.level = 5;
     this.score = 0;
     this.lives = 3;
     this.capsuleCount = 0;
@@ -282,7 +282,9 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.blocks, this.handlePlayerVsBlock, null, this);
     this.physics.add.collider(this.player, this.capsules);
     this.physics.add.collider(this.player, this.rocks);
+    this.physics.add.collider(this.player, this.explosives);
     this.physics.add.collider(this.mummies, this.blocks);
+    this.physics.add.collider(this.capsules, this.door);
 
     this.physics.add.collider(this.capsules, this.blocks);
     this.physics.add.collider(this.capsules, this.rocks);
@@ -306,8 +308,11 @@ export class GameScene extends Phaser.Scene {
   }
 
   handleExplosiveVsBlock(explosive, block) {
-    if (!explosive.body || !block) return;
-    if (explosive.body.velocity.y > 3) {
+    if (!explosive?.body || !block?.active) return;
+
+    const impactVelocity = explosive.prevVY ?? 0;
+
+    if (impactVelocity > 120) { // ← tweak threshold here
       this.explodeBodies(explosive, block);
     }
   }
@@ -605,9 +610,14 @@ export class GameScene extends Phaser.Scene {
         const x = bomb.x * BLOCK_SIZE - SPRITE_SIZE;
         const y = bomb.y * BLOCK_SIZE - SPRITE_SIZE;
 
-        const tnt = this.explosives.create(x, y, "explosive")
-          .setScale(SPRITE_SCALE)
+        const newExplosive = this.explosives.create(x, y, "explosive")
+          .setScale(SPRITE_SCALE - 0.15)
           .setOrigin(0.5);
+
+        newExplosive.setCollideWorldBounds(true);
+        newExplosive.setBounce(0);
+        newExplosive.setDrag(160, 0);
+        newExplosive.setMaxVelocity(60, 240);
       }
     });
 
@@ -770,7 +780,14 @@ export class GameScene extends Phaser.Scene {
       mummy.setVelocity(mummy.speedX, mummy.speedY);
     });
   }
+  handleExplosives() {
+    this.explosives.getChildren().forEach(explosive => {
+      if (!explosive.body) return;
 
+      explosive.prevVY = explosive.body.velocity.y;
+    });
+
+  }
   handleLocusts() {
     this.locusts?.getChildren().forEach((locust) => {
       if (!locust.body) return;
@@ -821,7 +838,7 @@ export class GameScene extends Phaser.Scene {
 
       case GAME_STATE.LEVEL:
         if (!this.player) return;
-
+        this.handleExplosives();
         this.handlePlayerMovement();
         this.handleMummies();
         this.handleLocusts();

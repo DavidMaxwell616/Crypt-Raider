@@ -99,7 +99,7 @@
     "player_position": {"x": 3,"y":7}, 
     "portal_position": {"x": 17,"y":13},
     "rock_position": [{"x": 0,"y":0}], 
-    "mummy_position": [{"x": 9,"y":8,"xv": 0,"yv":1}], 
+    "mummy_position": [{"x": 9,"y":9,"xv": 0,"yv":1}], 
     "locust_position": [{"x": 0,"y":0}], 
     "door_position": {"x": 17,"y":4},
     "key_position": {"x":9,"y":7}
