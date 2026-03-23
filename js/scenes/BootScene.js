@@ -20,15 +20,11 @@ export class BootScene extends Phaser.Scene {
         this.load.image("start button", "assets/images/start button.png");
         this.load.image("level complete", "assets/images/level complete.png");
         this.load.image("portal", "assets/images/portal.png");
-        this.load.spritesheet("door", "assets/spritesheets/door.png", {
+        this.load.image("rock", "assets/images/rock.png", {
             frameWidth: 32,
             frameHeight: 32
         });
-        this.load.spritesheet("rock", "assets/spritesheets/rock.png", {
-            frameWidth: 32,
-            frameHeight: 32
-        });
-        this.load.spritesheet("locust", "assets/spritesheets/locust.png", {
+        this.load.image("locust", "assets/images/locust.png", {
             frameWidth: 32,
             frameHeight: 32
         });
@@ -36,11 +32,16 @@ export class BootScene extends Phaser.Scene {
             frameWidth: 32,
             frameHeight: 32
         });
+
+        this.load.spritesheet("door", "assets/spritesheets/door.png", {
+            frameWidth: 32,
+            frameHeight: 32
+        });
         this.load.spritesheet("portal open", "assets/spritesheets/portal open.png", {
             frameWidth: 64,
             frameHeight: 60
         });
-        this.load.spritesheet("player level won", "assets/spritesheets/player level won.png", {
+        this.load.spritesheet("player_level_won", "assets/spritesheets/player level won.png", {
             frameWidth: 61,
             frameHeight: 85
         });
@@ -60,7 +61,7 @@ export class BootScene extends Phaser.Scene {
             frameWidth: 58,
             frameHeight: 32
         });
-        this.load.spritesheet("player_intro", "assets/spritesheets/player_intro.png", {
+        this.load.spritesheet("player_level_intro", "assets/spritesheets/player_intro.png", {
             frameWidth: 87,
             frameHeight: 95
         });
@@ -74,7 +75,6 @@ export class BootScene extends Phaser.Scene {
     }
 
     create() {
-        createAnimations(this);
 
         this.registry.set("gameState", GAME_STATE.INTRO);
         this.registry.set("level", 1);

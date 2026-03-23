@@ -64,19 +64,19 @@ export function createAnimations(scene) {
         });
     }
 
-    if (!anims.exists("player level won")) {
+    if (!anims.exists("player_level_won")) {
         anims.create({
-            key: "player level won",
-            frames: anims.generateFrameNumbers("player level won"),
+            key: "player_level_won",
+            frames: anims.generateFrameNumbers("player_level_won"),
             frameRate: 8,
             repeat: 0
         });
     }
 
-    if (!anims.exists("player_intro")) {
+    if (!anims.exists("player_level_intro")) {
         anims.create({
-            key: "player_intro",
-            frames: anims.generateFrameNumbers("player_intro"),
+            key: "player_level_intro",
+            frames: anims.generateFrameNumbers("player_level_intro"),
             frameRate: 16,
             repeat: -1
         });

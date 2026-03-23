@@ -11,8 +11,6 @@ export const SPRITE_SIZE = 25;
 export const GAME_WIDTH = 900;
 export const GAME_HEIGHT = 650;
 export const PLAYER_SPEED = 180;
-export const PLAYER_LEVEL_INTRO = 'player level intro';
-export const PLAYER_LEVEL_WON = 'player level won';
 export const SPRITE_SCALE = 1.4;
 export const BLOCK_TYPES =
 {

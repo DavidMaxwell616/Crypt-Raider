@@ -3,8 +3,6 @@ import {
   SPRITE_SIZE,
   GAME_STATE,
   LEVEL_CODES,
-  PLAYER_LEVEL_INTRO,
-  PLAYER_LEVEL_WON,
   SPRITE_SCALE,
   BLOCK_TYPES,
   YELLOW,
@@ -18,17 +16,16 @@ export class GameScene extends Phaser.Scene {
     super("GameScene");
 
     this.gameState = GAME_STATE.INTRO;
-
-    this.level = 1;
+    this.level = 3;
     this.score = 0;
     this.lives = 3;
-    this.timeLeft = 32;
     this.capsuleCount = 0;
     this.portalOpen = false;
     this.timerEvent = null;
     this.objectData = null;
     this.levelData = null;
-
+    this.startTimeLeft = 34;
+    this.timeLeft = 34;
     this.glow1Scale = 2.5;
     this.glow2Scale = 2.5;
     this.glow1Grow = 0.05;
@@ -108,11 +105,12 @@ export class GameScene extends Phaser.Scene {
           color: YELLOW
         });
 
-        this.scoreText2 = this.add.text(GAME_WIDTH * .6, GAME_HEIGHT * .8, {
+        this.scoreText2 = this.add.text(GAME_WIDTH * .6, GAME_HEIGHT * .8, this.score, {
           fontFamily: "Times New Roman",
           fontSize: "24px",
           color: YELLOW
         });
+        this.scoreText2.visible = false;
 
         this.livesText = this.add.text(BLOCK_SIZE * 7 + 20, 10, "LIVES: " + this.lives, {
           fontFamily: "impact",
@@ -131,6 +129,8 @@ export class GameScene extends Phaser.Scene {
             fontSize: "24px",
             color: YELLOW
           });
+        this.timeLeftText2.visible = false;
+
         this.getReady = this.add.image(BLOCK_SIZE * 4.9, BLOCK_SIZE * 4, "level intro")
           .setOrigin(0)
           .setScale(1.45, 1.7);
@@ -164,13 +164,13 @@ export class GameScene extends Phaser.Scene {
           fontWeight: "bold",
           color: "white"
         });
+        this.levelIntroBuilt = true;
         break;
 
       case GAME_STATE.LEVEL:
         this.cleanupLevelObjects();
 
         if (this.getReady) this.getReady.visible = false;
-        if (this.levelText) this.levelText.visible = false;
         if (this.levelCode) this.levelCode.visible = false;
         if (this.startButton2) this.startButton2.visible = false;
         if (this.startText) this.startText.visible = false;
@@ -204,32 +204,7 @@ export class GameScene extends Phaser.Scene {
         this.keySprite.label = "key";
         // reset timer
         this.timeLeft = 34;
-
-        // remove old timer
-        if (this.timerEvent) {
-          this.timerEvent.remove(false);
-        }
-
-        // create repeating timer
-        this.timerEvent = this.time.addEvent({
-          delay: 1000,
-          loop: true,
-          callback: () => {
-
-            if (this.gameState !== GAME_STATE.LEVEL) return;
-
-            this.timeLeft--;
-
-            if (this.timeLeft <= 0) {
-              this.timeLeft = 0;
-
-              this.timerEvent.remove(false);
-              this.timerEvent = null;
-
-              console.log("TIME UP");
-            }
-          }
-        });
+        this.createTimer();
         this.explosion = this.add.sprite(0, 0, "explosion")
           .setScale(1.72)
           .setOrigin(0.5);
@@ -243,7 +218,7 @@ export class GameScene extends Phaser.Scene {
         this.portal.body.setAllowGravity(false);
         this.portal.label = "portal";
 
-        this.playerLevelWon = this.add.sprite(0, 0, PLAYER_LEVEL_WON)
+        this.playerLevelWon = this.add.sprite(0, 0, "player_level_won")
           .setScale(1.3)
           .setOrigin(0.5);
         this.playerLevelWon.visible = false;
@@ -251,12 +226,12 @@ export class GameScene extends Phaser.Scene {
         this.scoreText2.visible = false;
         this.playerLevelWon.off("animationcomplete");
         this.playerLevelWon.on("animationcomplete", (animation) => {
-          if (animation.key === PLAYER_LEVEL_WON) {
+          if (animation.key === "player_level_won") {
             this.clearLevel();
           }
         });
 
-        this.playerLevelIntro = this.add.sprite(width / 2, height / 2, PLAYER_LEVEL_INTRO)
+        this.playerLevelIntro = this.add.sprite(width / 2, height / 2, "player_intro")
           .setScale(1.72)
           .setOrigin(0.5);
         this.playerLevelIntro.visible = false;
@@ -265,16 +240,15 @@ export class GameScene extends Phaser.Scene {
         this.spawnObjects();
         this.portalOpen = false;
         this.registerArcadeColliders();
+        this.levelBuilt = true;
         break;
 
       default:
         break;
     }
-
-    // reset time if needed
-    this.timeLeft = 34;
-
-    // kill any previous timer (important!)
+  }
+  createTimer() {
+    // remove old timer
     if (this.timerEvent) {
       this.timerEvent.remove(false);
     }
@@ -284,30 +258,22 @@ export class GameScene extends Phaser.Scene {
       delay: 1000,
       loop: true,
       callback: () => {
-        // only count down during active gameplay
-        if (this.gameState !== GAME_STATE.LEVEL) return;
 
-        if (this.timeLeft > 0) {
-          this.timeLeft--;
-          this.updateStats();
-        }
+        if (this.gameState !== GAME_STATE.LEVEL) return;
+        if (this.playerLevelWon.visible) return;
+        this.timeLeft--;
 
         if (this.timeLeft <= 0) {
           this.timeLeft = 0;
 
-          // stop timer
           this.timerEvent.remove(false);
           this.timerEvent = null;
 
           console.log("TIME UP");
-
-          // example behavior:
-          // this.lives--;
-          // this.gameState = GAME_STATE.LEVEL_INTRO;
-          // this.startLevel();
         }
       }
     });
+
   }
 
   registerArcadeColliders() {
@@ -316,6 +282,7 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.blocks, this.handlePlayerVsBlock, null, this);
     this.physics.add.collider(this.player, this.capsules);
     this.physics.add.collider(this.player, this.rocks);
+    this.physics.add.collider(this.mummies, this.blocks);
 
     this.physics.add.collider(this.capsules, this.blocks);
     this.physics.add.collider(this.capsules, this.rocks);
@@ -325,8 +292,9 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.rocks, this.explosives, this.handleRockVsExplosive, null, this);
     this.physics.add.collider(this.locusts, this.blocks, this.handleLocustVsBlock, null, this);
 
+    this.physics.add.collider(this.player, this.portal, this.handlePlayerVsPortal, null, this);
     this.physics.add.overlap(this.player, this.keySprite, this.handlePlayerVsKey, null, this);
-    this.physics.add.overlap(this.capsules, this.portal, this.handleCapsuleVsPortal, null, this);
+    this.physics.add.overlap(this.portal, this.capsules, this.handleCapsuleVsPortal, null, this);
     this.physics.add.overlap(this.rocks, this.locusts, this.handleRockVsLocust, null, this);
   }
 
@@ -353,12 +321,8 @@ export class GameScene extends Phaser.Scene {
 
   handleLocustVsBlock(locust) {
     if (!locust.body) return;
-    if (locust.body.velocity.y !== 0) {
-      locust.setVelocityY(-locust.body.velocity.y);
-    }
-    if (locust.body.velocity.x > 0) {
-      locust.setVelocityX(-locust.body.velocity.x);
-    }
+    locust.speedX = -locust.speedX;
+    locust.speedY = -locust.speedY;
   }
 
   handlePlayerVsKey(player, key) {
@@ -372,14 +336,15 @@ export class GameScene extends Phaser.Scene {
   }
 
   handleCapsuleVsPortal(portal, capsule) {
-    let distance = Math.abs(portal.x - capsule.x);
-    if (!this.portalOpen && distance > 4) return;
+    if (!capsule.active || !portal.active) return;
 
-    capsule.visible = false;
-    capsule.destroy();
+    console.log("capsule hitting portal");
+
+    capsule.disableBody(true, true);
     this.capsuleCount--;
 
     if (this.capsuleCount <= 0) {
+      this.capsuleCount = 0;
       this.openPortal();
     }
   }
@@ -393,9 +358,8 @@ export class GameScene extends Phaser.Scene {
     this.portalOpen = false;
     this.playerLevelWon.visible = true;
     this.playerLevelWon.setPosition(this.player.x, this.player.y);
-    this.playerLevelWon.play(PLAYER_LEVEL_WON, true);
+    this.playerLevelWon.play("player_level_won", true);
     this.player.visible = false;
-    this.player.body.enable = false;
   }
 
   handleRockVsLocust(rock, locust) {
@@ -449,7 +413,7 @@ export class GameScene extends Phaser.Scene {
 
     if (this.playerLevelIntro) {
       this.playerLevelIntro.visible = true;
-      this.playerLevelIntro.play(PLAYER_LEVEL_INTRO, true);
+      this.playerLevelIntro.play("player_level_intro", true);
     }
 
     this.blocks.clear(true, true);
@@ -465,7 +429,7 @@ export class GameScene extends Phaser.Scene {
     this.timeLeftText2.visible = true;
     this.livesText.visible = false;
     this.levelText.visible = false;
-
+    this.playerLevelWon.visible = false;
     if (this.portal) this.portal.visible = false;
     if (this.backgroundImage) this.backgroundImage.visible = false;
     if (this.portalOpenSprite) this.portalOpenSprite.visible = false;
@@ -542,18 +506,37 @@ export class GameScene extends Phaser.Scene {
         if (this.glow2) this.glow2.visible = false;
         if (this.splash) this.splash.visible = false;
         if (this.startButton) this.startButton.visible = false;
-        this.startLevel();
+        if (!this.levelIntroBuilt)
+          this.startLevel();
         break;
 
       case GAME_STATE.LEVEL:
         if (this.glow1) this.glow1.visible = false;
         if (this.glow2) this.glow2.visible = false;
         if (this.splash) this.splash.visible = false;
+        if (this.playerLevelIntro) this.playerLevelIntro.visible = false;
         if (this.startButton) this.startButton.visible = false;
         if (this.levelComplete) this.levelComplete.visible = false;
+        if (this.scoreText2) this.scoreText2.visible = false;
+        if (this.timeLeftText2) this.timeLeftText2.visible = false;
         this.level++;
+        this.startTimeLeft += 10;
+        this.timeLeft = this.startTimeLeft;
         this.gameState = GAME_STATE.LEVEL;
-        this.startLevel();
+        if (!this.levelBuilt)
+          this.startLevel();
+        else {
+          this.levelData = this.objectData["level_" + this.level]?.[0];
+          this.renderBlocks();
+          this.spawnObjects();
+          this.portalOpen = false;
+          this.backgroundImage.visible = true;
+          this.levelText.visible = true;
+          this.livesText.visible = true;
+          this.scoreText.visible = true;
+          this.timeLeftText.visible = true;
+          this.createTimer();
+        }
         break;
 
       case GAME_STATE.INTERMISSION:
@@ -577,6 +560,7 @@ export class GameScene extends Phaser.Scene {
     const portalX = this.levelData.portal_position.x * BLOCK_SIZE - SPRITE_SIZE;
     const portalY = this.levelData.portal_position.y * BLOCK_SIZE - SPRITE_SIZE;
     this.portal.setPosition(portalX, portalY);
+
     this.portalOpenSprite.setPosition(portalX, portalY);
 
     const keyX = this.levelData.key_position.x * BLOCK_SIZE - SPRITE_SIZE;
@@ -594,8 +578,8 @@ export class GameScene extends Phaser.Scene {
           .setScale(SPRITE_SCALE)
           .setOrigin(0.5);
         newRock.body.setCircle(16);
-        newRock.setDrag(10, 0);
-        newRock.setMaxVelocity(120, 240);
+        newRock.setDrag(20, 0);
+        newRock.setMaxVelocity(120, 180);
       }
     });
 
@@ -608,9 +592,11 @@ export class GameScene extends Phaser.Scene {
           .setScale(SPRITE_SCALE)
           .setOrigin(0.5);
 
+        newLocust.speedX = locust.xv * 60 || 0;
+        newLocust.speedY = locust.yv * 60 || 0;
+
         newLocust.body.setAllowGravity(false);
         newLocust.body.setImmovable(false);
-        newLocust.setVelocity(0, 40);
       }
     });
 
@@ -669,8 +655,8 @@ export class GameScene extends Phaser.Scene {
       newCapsule.body.setCollideWorldBounds(true);
       newCapsule.body.setCircle(65);
 
-      newCapsule.setDrag(10, 0);
-      newCapsule.setMaxVelocity(120, 240);
+      newCapsule.setDrag(20, 0);
+      newCapsule.setMaxVelocity(120, 180);
       newCapsule.play("capsule", true);
       newCapsule.anims.setCurrentFrame(
         this.anims.get("capsule").frames[Phaser.Math.Between(1, 5)]
@@ -785,6 +771,21 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
+  handleLocusts() {
+    this.locusts?.getChildren().forEach((locust) => {
+      if (!locust.body) return;
+      locust.setVelocity(locust.speedX, locust.speedY);
+    });
+  }
+
+  handleRockRoll() {
+    this.rocks?.getChildren().forEach((rock) => {
+      if (rock.body.velocity.x !== 0) {
+        rock.angle += rock.body.velocity.x * 0.05;
+      }
+    });
+  }
+
   update(delta) {
     switch (this.gameState) {
       case GAME_STATE.INTRO:
@@ -807,6 +808,11 @@ export class GameScene extends Phaser.Scene {
         if (this.glow1 && this.glow2) {
           this.showGlowEffect();
         }
+        if (this.timeLeft > 0) {
+          this.timeLeft--;
+          this.score++;
+          this.updateStats();
+        }
         if (Phaser.Input.Keyboard.JustDown(this.keys.space)) {
           this.gameState = GAME_STATE.LEVEL;
           this.bumpLevel();
@@ -818,28 +824,8 @@ export class GameScene extends Phaser.Scene {
 
         this.handlePlayerMovement();
         this.handleMummies();
-
-        this.timeAccumulator += delta;
-
-        while (this.timeAccumulator >= 1000) {
-          this.timeAccumulator -= 1000;
-
-          if (this.timeLeft > 0) {
-            this.timeLeft--;
-          }
-
-          if (this.timeLeft <= 0) {
-            this.timeLeft = 0;
-
-            // timeout behavior
-            // this.lives--;
-            // this.gameState = GAME_STATE.LEVEL_INTRO;
-            // this.startLevel();
-
-            break;
-          }
-        }
-
+        this.handleLocusts();
+        this.handleRockRoll();
         this.updateStats();
         break;
 
