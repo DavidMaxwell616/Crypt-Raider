@@ -2,21 +2,20 @@ import {
   BLOCK_SIZE,
   SPRITE_SIZE,
   GAME_STATE,
-  LEVEL_CODES,
   SPRITE_SCALE,
   BLOCK_TYPES,
-  YELLOW,
-  GAME_WIDTH,
-  GAME_HEIGHT,
 } from "../config.js";
 import { createAnimations } from "../AnimationFactory.js";
+import { setUpIntro } from "../IntroSetup.js";
+import { setUpLevelIntro } from "../LevelIntroSetup.js";
+import { setUpLevel } from "../LevelSetup.js";
 
 export class GameScene extends Phaser.Scene {
   constructor() {
     super("GameScene");
 
     this.gameState = GAME_STATE.INTRO;
-    this.level = 5;
+    this.level = 6;
     this.score = 0;
     this.lives = 3;
     this.capsuleCount = 0;
@@ -61,186 +60,18 @@ export class GameScene extends Phaser.Scene {
   }
 
   startLevel() {
-    const width = this.scale.width;
-    const height = this.scale.height;
 
     switch (this.gameState) {
       case GAME_STATE.INTRO:
-        this.blocks.clear(true, true);
-
-        this.glow1 = this.add.image(width / 2, height / 4, "glow").setOrigin(0.5);
-        this.glow2 = this.add.image(width / 2, height / 4, "glow").setOrigin(0.5).setAngle(90);
-        this.splash = this.add.image(width / 2, height / 2.7, "splash").setOrigin(0.5).setScale(2.5);
-
-        this.startButton = this.add.image(width / 2, height * 0.8, "start button")
-          .setOrigin(0.5)
-          .setScale(2.5)
-          .setInteractive()
-          .on("pointerdown", () => this.bumpLevel());
-
-        this.levelComplete = this.add.image(width / 2, height * 0.75, "level complete")
-          .setOrigin(0.5)
-          .setScale(1.5)
-          .setInteractive()
-          .on("pointerdown", () => {
-            this.gameState = GAME_STATE.LEVEL;
-            this.bumpLevel();
-          });
-
-        this.levelComplete.visible = false;
+        setUpIntro(this);
         break;
 
       case GAME_STATE.LEVEL_INTRO:
-        this.backgroundImage = this.add.image(0, 0, "background").setOrigin(0);
-
-        this.levelText = this.add.text(BLOCK_SIZE + 30, 10, "LEVEL: " + this.level, {
-          fontFamily: "impact",
-          fontSize: "24px",
-          color: YELLOW
-        });
-
-        this.scoreText = this.add.text(BLOCK_SIZE * 4 + 20, 10, "SCORE: " + this.score, {
-          fontFamily: "impact",
-          fontSize: "24px",
-          color: YELLOW
-        });
-
-        this.scoreText2 = this.add.text(GAME_WIDTH * .6, GAME_HEIGHT * .8, this.score, {
-          fontFamily: "Times New Roman",
-          fontSize: "24px",
-          color: YELLOW
-        });
-        this.scoreText2.visible = false;
-
-        this.livesText = this.add.text(BLOCK_SIZE * 7 + 20, 10, "LIVES: " + this.lives, {
-          fontFamily: "impact",
-          fontSize: "24px",
-          color: YELLOW
-        });
-
-        this.timeLeftText = this.add.text(BLOCK_SIZE * 10 + 20, 10, "TIME: " + this.timeLeft, {
-          fontFamily: "impact",
-          fontSize: "24px",
-          color: YELLOW
-        });
-        this.timeLeftText2 = this.add.text(GAME_WIDTH * .6, GAME_HEIGHT * .745, this.timeLeft,
-          {
-            fontFamily: "Times New Roman",
-            fontSize: "24px",
-            color: YELLOW
-          });
-        this.timeLeftText2.visible = false;
-
-        this.getReady = this.add.image(BLOCK_SIZE * 4.9, BLOCK_SIZE * 4, "level intro")
-          .setOrigin(0)
-          .setScale(1.45, 1.7);
-
-        this.levelCode = this.add.text(
-          BLOCK_SIZE * 6,
-          BLOCK_SIZE * 7,
-          "LEVEL CODE: " + (LEVEL_CODES[this.level] || LEVEL_CODES[0]),
-          {
-            fontFamily: "courier new",
-            fontSize: "24px",
-            fontWeight: "bold",
-            color: "white"
-          }
-        );
-
-        this.startButton2 = this.add.sprite(BLOCK_SIZE * 7, BLOCK_SIZE * 8.1, "capsule")
-          .setOrigin(0)
-          .setScale(0.4)
-          .setInteractive()
-          .on("pointerdown", () => {
-            this.gameState = GAME_STATE.LEVEL;
-            this.startLevel();
-          });
-
-        this.startButton2.play("capsule", true);
-
-        this.startText = this.add.text(BLOCK_SIZE * 8.5, BLOCK_SIZE * 8.5, "START", {
-          fontFamily: "courier new",
-          fontSize: "24px",
-          fontWeight: "bold",
-          color: "white"
-        });
-        this.levelIntroBuilt = true;
+        setUpLevelIntro(this);
         break;
 
       case GAME_STATE.LEVEL:
-        this.cleanupLevelObjects();
-
-        if (this.getReady) this.getReady.visible = false;
-        if (this.levelCode) this.levelCode.visible = false;
-        if (this.startButton2) this.startButton2.visible = false;
-        if (this.startText) this.startText.visible = false;
-
-        this.levelData = this.objectData["level_" + this.level]?.[0];
-        if (!this.levelData) {
-          console.warn("Missing level data for level", this.level);
-          return;
-        }
-
-        this.player = this.physics.add.sprite(0, 0, "player")
-          .setScale(SPRITE_SCALE)
-          .setOrigin(0.5)
-          .setCollideWorldBounds(true);
-
-        this.player.body.setAllowGravity(false);
-
-        this.portalOpenSprite = this.add.sprite(0, 0, "portal open")
-          .setScale(1.72)
-          .setOrigin(0.5);
-        this.portalOpenSprite.visible = false;
-        this.portalOpenSprite.play("portal open", true);
-
-        this.keySprite = this.physics.add.sprite(0, 0, "key")
-          .setScale(1.72)
-          .setOrigin(0.5)
-          .setImmovable(true);
-
-        this.keySprite.body.setAllowGravity(false);
-        this.keySprite.visible = false;
-        this.keySprite.label = "key";
-        // reset timer
-        this.timeLeft = 34;
-        this.createTimer();
-        this.explosion = this.add.sprite(0, 0, "explosion")
-          .setScale(1.72)
-          .setOrigin(0.5);
-        this.explosion.visible = false;
-
-        this.portal = this.physics.add.sprite(0, 0, "portal")
-          .setOrigin(0.5)
-          .setDisplaySize(BLOCK_SIZE, BLOCK_SIZE)
-          .setImmovable(true);
-
-        this.portal.body.setAllowGravity(false);
-        this.portal.label = "portal";
-
-        this.playerLevelWon = this.add.sprite(0, 0, "player_level_won")
-          .setScale(1.3)
-          .setOrigin(0.5);
-        this.playerLevelWon.visible = false;
-        this.timeLeftText2.visible = false;
-        this.scoreText2.visible = false;
-        this.playerLevelWon.off("animationcomplete");
-        this.playerLevelWon.on("animationcomplete", (animation) => {
-          if (animation.key === "player_level_won") {
-            this.clearLevel();
-          }
-        });
-
-        this.playerLevelIntro = this.add.sprite(width / 2, height / 2, "player_intro")
-          .setScale(1.72)
-          .setOrigin(0.5);
-        this.playerLevelIntro.visible = false;
-
-        this.renderBlocks();
-        this.spawnObjects();
-        this.portalOpen = false;
-        this.registerArcadeColliders();
-        this.levelBuilt = true;
+        setUpLevel(this);
         break;
 
       default:
@@ -798,7 +629,7 @@ export class GameScene extends Phaser.Scene {
   handleRockRoll() {
     this.rocks?.getChildren().forEach((rock) => {
       if (rock.body.velocity.x !== 0) {
-        rock.angle += rock.body.velocity.x * 0.05;
+        rock.angle += rock.body.velocity.x * 0.025;
       }
     });
   }
