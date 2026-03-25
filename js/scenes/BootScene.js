@@ -45,13 +45,17 @@ export class BootScene extends Phaser.Scene {
             frameWidth: 64,
             frameHeight: 60
         });
-        this.load.spritesheet("player_level_won", "assets/spritesheets/player level won.png", {
-            frameWidth: 61,
-            frameHeight: 85
-        });
         this.load.spritesheet("player", "assets/spritesheets/player.png", {
             frameWidth: 27,
             frameHeight: 32
+        });
+        this.load.spritesheet("player_won", "assets/spritesheets/player won.png", {
+            frameWidth: 132,
+            frameHeight: 131
+        });
+        this.load.spritesheet("player_died", "assets/spritesheets/player died.png", {
+            frameWidth: 61,
+            frameHeight: 85
         });
         this.load.spritesheet("capsule", "assets/spritesheets/capsule.png", {
             frameWidth: 130,

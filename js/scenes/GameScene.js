@@ -15,7 +15,7 @@ export class GameScene extends Phaser.Scene {
     super("GameScene");
 
     this.gameState = GAME_STATE.INTRO;
-    this.level = 10;
+    this.level = 3;
     this.score = 0;
     this.lives = 3;
     this.capsuleCount = 0;
@@ -29,6 +29,7 @@ export class GameScene extends Phaser.Scene {
     this.glow2Scale = 2.5;
     this.glow1Grow = 0.05;
     this.glow2Grow = 0.01;
+    this.playerDying = false;
   }
 
   create() {
@@ -91,7 +92,7 @@ export class GameScene extends Phaser.Scene {
       callback: () => {
 
         if (this.gameState !== GAME_STATE.LEVEL) return;
-        if (this.playerLevelWon.visible) return;
+        if (this.playerLevelWon?.visible) return;
         this.timeLeft--;
 
         if (this.timeLeft <= 0) {
@@ -100,7 +101,7 @@ export class GameScene extends Phaser.Scene {
           this.timerEvent.remove(false);
           this.timerEvent = null;
 
-          console.log("TIME UP");
+          this.killPlayer();
         }
       }
     });
@@ -132,6 +133,8 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.overlap(this.player, this.keySprite, this.handlePlayerVsKey, null, this);
     this.physics.add.overlap(this.portal, this.capsules, this.handleCapsuleVsPortal, null, this);
     this.physics.add.overlap(this.rocks, this.locusts, this.handleRockVsLocust, null, this);
+    this.physics.add.overlap(this.player, this.locusts, this.handlePlayerVsLocust, null, this);
+    this.physics.add.overlap(this.player, this.mummies, this.handlePlayerVsMummy, null, this);
   }
 
   handlePlayerVsBlock(player, block) {
@@ -179,11 +182,64 @@ export class GameScene extends Phaser.Scene {
       this.door.play("door", true);
     }
   }
+  handlePlayerVsLocust(player, locust) {
+    this.killPlayer();
+  }
+
+  handlePlayerVsMummy(player, mummy) {
+    this.killPlayer();
+  }
+  killPlayer() {
+    if (!this.player || !this.player.active) return;
+    if (this.playerDying) return;
+    if (this.playerLevelWon?.visible) return;
+
+    this.playerDying = true;
+
+    if (this.timerEvent) {
+      this.timerEvent.remove(false);
+      this.timerEvent = null;
+    }
+
+    this.lives = Math.max(0, this.lives - 1);
+
+    this.player.setVelocity(0, 0);
+    this.player.visible = false;
+
+    this.playerDied.setPosition(this.player.x, this.player.y);
+    this.playerDied.visible = true;
+    this.playerDied.play("player_died", true);
+
+    this.playerDied.off("animationcomplete");
+    this.playerDied.on("animationcomplete", () => {
+      this.playerDying = false;
+      this.playerDied.visible = false;
+      if (this.lives <= 0) {
+        this.level = 3;
+        this.score = 0;
+        this.startTimeLeft = 34;
+        this.timeLeft = 34;
+        this.gameState = GAME_STATE.INTRO;
+
+        this.cleanupLevelObjects();
+
+        if (this.backgroundImage) this.backgroundImage.visible = false;
+        if (this.levelText) this.levelText.visible = false;
+        if (this.scoreText) this.scoreText.visible = false;
+        if (this.livesText) this.livesText.visible = false;
+        if (this.timeLeftText) this.timeLeftText.visible = false;
+
+        this.startLevel();
+        return;
+      }
+
+      this.gameState = GAME_STATE.LEVEL;
+      this.startLevel();
+    });
+  }
 
   handleCapsuleVsPortal(portal, capsule) {
     if (!capsule.active || !portal.active) return;
-
-    console.log("capsule hitting portal");
 
     capsule.disableBody(true, true);
     this.capsuleCount--;
@@ -201,8 +257,8 @@ export class GameScene extends Phaser.Scene {
 
     this.portalOpen = false;
     this.playerLevelWon.visible = true;
-    this.playerLevelWon.setPosition(this.player.x, this.player.y);
-    this.playerLevelWon.play("player_level_won", true);
+    this.playerLevelWon?.setPosition(this.player.x, this.player.y);
+    this.playerLevelWon?.play("player_won", true);
     this.player.visible = false;
   }
 
@@ -238,6 +294,18 @@ export class GameScene extends Phaser.Scene {
 
   showExplosion() {
     const exp = this.explosion;
+
+    if (
+      this.player &&
+      this.player.active &&
+      this.player.visible &&
+      this.player.x > exp.x - exp.width &&
+      this.player.x < exp.x + exp.width &&
+      this.player.y > exp.y - exp.height &&
+      this.player.y < exp.y + exp.height
+    ) {
+      this.killPlayer();
+    }
 
     // destroy nearby breakable blocks
     this.blocks.getChildren().forEach((block) => {
@@ -327,8 +395,8 @@ export class GameScene extends Phaser.Scene {
     if (this.splash) this.splash.setScale(0.75);
 
     if (this.splash) this.splash.y = 150;
-    if (this.glow1) this.glow1.y -= 40;
-    if (this.glow2) this.glow2.y -= 40;
+    if (this.glow1) this.glow1.y = 110;
+    if (this.glow2) this.glow2.y = 110;
 
     this.gameState = GAME_STATE.INTERMISSION;
   }
@@ -450,7 +518,6 @@ export class GameScene extends Phaser.Scene {
     const keyY = this.levelData.key_position.y * BLOCK_SIZE - SPRITE_SIZE;
     this.keySprite.setPosition(keyX, keyY).setVisible(true);
 
-    this.playerLevelWon.setPosition(0, 0);
 
     this.levelData.rock_position.forEach((rock) => {
       if (rock.x !== 0 && rock.y !== 0) {

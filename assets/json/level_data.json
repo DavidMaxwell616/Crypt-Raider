@@ -102,7 +102,7 @@
     "mummy_position": [{"x": 9,"y":9,"xv": 0,"yv":1}], 
     "locust_position": [{"x": 0,"y":0}], 
     "door_position": {"x": 17,"y":4},
-    "key_position": {"x":9,"y":7}
+    "key_position": {"x":9,"y":5}
     }
   ],
   "level_5": [{

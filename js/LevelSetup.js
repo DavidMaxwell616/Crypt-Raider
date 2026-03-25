@@ -56,15 +56,21 @@ export function setUpLevel(scene) {
   scene.portal.body.setAllowGravity(false);
   scene.portal.label = "portal";
 
-  scene.playerLevelWon = scene.add.sprite(0, 0, "player_level_won")
+  scene.playerLevelWon = scene.add.sprite(0, 0, "player_won")
     .setScale(1.3)
     .setOrigin(0.5);
   scene.playerLevelWon.visible = false;
+
+  scene.playerDied = scene.add.sprite(0, 0, "player_died")
+    .setScale(1.3)
+    .setOrigin(0.5);
+  scene.playerDied.visible = false;
+
   scene.timeLeftText2.visible = false;
   scene.scoreText2.visible = false;
   scene.playerLevelWon.off("animationcomplete");
   scene.playerLevelWon.on("animationcomplete", (animation) => {
-    if (animation.key === "player_level_won") {
+    if (animation.key === "player_won") {
       scene.clearLevel();
     }
   });
