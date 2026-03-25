@@ -15,7 +15,7 @@ export class GameScene extends Phaser.Scene {
     super("GameScene");
 
     this.gameState = GAME_STATE.INTRO;
-    this.level = 6;
+    this.level = 10;
     this.score = 0;
     this.lives = 3;
     this.capsuleCount = 0;
@@ -116,6 +116,9 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.explosives);
     this.physics.add.collider(this.mummies, this.blocks);
     this.physics.add.collider(this.capsules, this.door);
+    this.physics.add.collider(this.rocks, this.rocks);
+    this.physics.add.collider(this.capsules, this.capsules);
+    this.physics.add.collider(this.explosives, this.explosives);
 
     this.physics.add.collider(this.capsules, this.blocks);
     this.physics.add.collider(this.capsules, this.rocks);
@@ -142,15 +145,21 @@ export class GameScene extends Phaser.Scene {
     if (!explosive?.body || !block?.active) return;
 
     const impactVelocity = explosive.prevVY ?? 0;
-
-    if (impactVelocity > 120) { // ← tweak threshold here
+    const frameName = block?.frame?.name;
+    if (impactVelocity > 120 && BLOCK_TYPES[frameName] !== "block") {
       this.explodeBodies(explosive, block);
     }
   }
 
   handleRockVsExplosive(rock, explosive) {
-    if (!rock.body || !explosive.body) return;
-    if (rock.body.velocity.y > 3 || explosive.body.velocity.y > 3) {
+    if (!rock?.body || !explosive?.body || !rock.active || !explosive.active) return;
+
+    const impactExplosiveVelocity = explosive.prevVY ?? 0;
+    const impactRockVelocity = rock.prevVY ?? 0;
+    const speedThreshold = 150;
+    if (impactExplosiveVelocity >= speedThreshold ||
+      impactRockVelocity >= speedThreshold
+    ) {
       this.explodeBodies(rock, explosive);
     }
   }
@@ -186,7 +195,6 @@ export class GameScene extends Phaser.Scene {
   }
 
   handlePlayerVsPortal(player, portal) {
-    console.log('player hit portal');
     let distance = Math.abs(portal.x - player.x);
 
     if (!this.portalOpen || distance > 4) return;
@@ -231,6 +239,7 @@ export class GameScene extends Phaser.Scene {
   showExplosion() {
     const exp = this.explosion;
 
+    // destroy nearby breakable blocks
     this.blocks.getChildren().forEach((block) => {
       if (
         parseInt(block.frame.name, 10) < 6 &&
@@ -242,8 +251,46 @@ export class GameScene extends Phaser.Scene {
         block.destroy();
       }
     });
-  }
 
+    // trigger nearby explosives (chain reaction)
+    const hitExplosives = [];
+
+    this.explosives.getChildren().forEach((explosive) => {
+      if (
+        explosive.active &&
+        explosive.x > exp.x - exp.width &&
+        explosive.x < exp.x + exp.width &&
+        explosive.y > exp.y - exp.height &&
+        explosive.y < exp.y + exp.height
+      ) {
+        hitExplosives.push(explosive);
+      }
+    });
+
+    hitExplosives.forEach((explosive) => {
+      this.time.delayedCall(60, () => {
+        if (!explosive.active) return;
+        this.explodeBodies(explosive, null);
+      });
+    });
+    // destroy nearby rocks
+    this.rocks.getChildren().forEach((rock) => {
+      if (
+        rock.active &&
+        rock.x > exp.x - exp.width &&
+        rock.x < exp.x + exp.width &&
+        rock.y > exp.y - exp.height &&
+        rock.y < exp.y + exp.height
+      ) {
+        this.explosion.setPosition(rock.x, rock.y);
+
+        rock.destroy();
+
+        this.explosion.visible = true;
+        this.explosion.play("explosion", true);
+      }
+    });
+  }
   clearLevel() {
     this.capsuleCount = 0;
 
@@ -496,7 +543,7 @@ export class GameScene extends Phaser.Scene {
       newCapsule.body.setCollideWorldBounds(true);
       newCapsule.body.setCircle(65);
 
-      newCapsule.setDrag(20, 0);
+      newCapsule.setDrag(200, 0);
       newCapsule.setMaxVelocity(120, 180);
       newCapsule.play("capsule", true);
       newCapsule.anims.setCurrentFrame(
@@ -631,6 +678,7 @@ export class GameScene extends Phaser.Scene {
       if (rock.body.velocity.x !== 0) {
         rock.angle += rock.body.velocity.x * 0.025;
       }
+      rock.prevVY = rock.body.velocity.y;
     });
   }
 
