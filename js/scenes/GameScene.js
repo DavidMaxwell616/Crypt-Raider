@@ -15,7 +15,7 @@ export class GameScene extends Phaser.Scene {
     super("GameScene");
 
     this.gameState = GAME_STATE.INTRO;
-    this.level = 3;
+    this.level = 1;
     this.score = 0;
     this.lives = 3;
     this.capsuleCount = 0;
@@ -48,6 +48,18 @@ export class GameScene extends Phaser.Scene {
     this.objectData = this.cache.json.get("levelData");
 
     createAnimations(this);
+
+    this.sfx = {
+      capsule_drop: this.sound.add("sfx_capsule_drop", { volume: 0.7 }),
+      explosion: this.sound.add("sfx_explosion", { volume: 0.6 }),
+      death: this.sound.add("sfx_player_died", { volume: 0.7 }),
+      level_won: this.sound.add("sfx_level_won", { volume: 0.6 }),
+      pickup: this.sound.add("sfx_pickup", { volume: 0.5 }),
+      tick: this.sound.add("sfx_tick", { volume: 0.3 }),
+      theme: this.sound.add("sfx_theme", { volume: 0.3, loop: true }),
+      walk: this.sound.add("sfx_walk", { volume: 0.3 }),
+      walk_sand: this.sound.add("sfx_walk_sand", { volume: 0.3 }),
+    }
 
     this.keys = this.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.UP,
@@ -140,6 +152,7 @@ export class GameScene extends Phaser.Scene {
   handlePlayerVsBlock(player, block) {
     const frameName = block?.frame?.name;
     if (BLOCK_TYPES[frameName] === "sand") {
+      this.sfx.walk_sand.play();
       block.destroy();
     }
   }
@@ -177,7 +190,7 @@ export class GameScene extends Phaser.Scene {
     if (!key.active) return;
     key.visible = false;
     key.destroy();
-
+    this.sfx.pickup.play();
     if (this.door) {
       this.door.play("door", true);
     }
@@ -208,6 +221,7 @@ export class GameScene extends Phaser.Scene {
 
     this.playerDied.setPosition(this.player.x, this.player.y);
     this.playerDied.visible = true;
+    this.sfx.death.play();
     this.playerDied.play("player_died", true);
 
     this.playerDied.off("animationcomplete");
@@ -253,12 +267,13 @@ export class GameScene extends Phaser.Scene {
   handlePlayerVsPortal(player, portal) {
     let distance = Math.abs(portal.x - player.x);
 
-    if (!this.portalOpen || distance > 4) return;
+    if (!this.portalOpen || distance > 6) return;
 
     this.portalOpen = false;
     this.playerLevelWon.visible = true;
     this.playerLevelWon?.setPosition(this.player.x, this.player.y);
     this.playerLevelWon?.play("player_won", true);
+    this.sfx.level_won.play();
     this.player.visible = false;
   }
 
@@ -294,6 +309,7 @@ export class GameScene extends Phaser.Scene {
 
   showExplosion() {
     const exp = this.explosion;
+    this.sfx.explosion.play();
 
     if (
       this.player &&
@@ -443,6 +459,7 @@ export class GameScene extends Phaser.Scene {
 
   openPortal() {
     this.portalOpen = true;
+    this.sfx.capsule_drop.play();
     if (this.portalOpenSprite) {
       this.portalOpenSprite.visible = true;
     }
@@ -683,17 +700,22 @@ export class GameScene extends Phaser.Scene {
 
     if (this.keys.left.isDown) {
       vx = -speed;
+      this.sfx.walk.play();
       this.player.setFlipX(true);
       this.player.play("walk", true);
+
     } else if (this.keys.right.isDown) {
       vx = speed;
+      this.sfx.walk.play();
       this.player.setFlipX(false);
       this.player.play("walk", true);
     } else if (this.keys.up.isDown) {
       vy = -speed;
+      this.sfx.walk.play();
       this.player.play("walk_up", true);
     } else if (this.keys.down.isDown) {
       vy = speed;
+      this.sfx.walk.play();
       this.player.play("walk_down", true);
     } else {
       this.player.play("idle", true);

@@ -4,6 +4,7 @@ import {
 } from "./config.js";
 
 export function setUpLevel(scene) {
+  scene.sfx.theme.stop();
   scene.cleanupLevelObjects();
   const width = scene.scale.width;
   const height = scene.scale.height;

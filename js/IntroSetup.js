@@ -2,6 +2,7 @@ export function setUpIntro(scene) {
     const width = scene.scale.width;
     const height = scene.scale.height;
     scene.blocks.clear(true, true);
+    scene.sfx.theme.play();
 
     scene.glow1 = scene.add.image(width / 2, height / 4, "glow").setOrigin(0.5);
     scene.glow2 = scene.add.image(width / 2, height / 4, "glow").setOrigin(0.5).setAngle(90);

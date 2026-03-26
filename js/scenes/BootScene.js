@@ -77,12 +77,22 @@ export class BootScene extends Phaser.Scene {
 
         this.load.path = "../assets/json/";
         this.load.json("levelData", "level_data.json");
+        // placeholder sounds (replace with real files later)
+        this.load.path = "../assets/sfx/";
+        this.load.audio("sfx_explosion", "explosion.mp3");
+        this.load.audio("sfx_player_died", "player_died.mp3");
+        this.load.audio("sfx_pickup", "pickup.mp3");
+        this.load.audio("sfx_capsule_drop", "capsule_drop.mp3");
+        this.load.audio("sfx_level_won", "level_won.mp3");
+        this.load.audio("sfx_tick", "tick.mp3");
+        this.load.audio("sfx_walk", "walk.mp3");
+        this.load.audio("sfx_walk_sand", "walk_sand.mp3");
+        this.load.audio("sfx_theme", "theme.mp3")
     }
 
     create() {
 
         this.registry.set("gameState", GAME_STATE.INTRO);
-        this.registry.set("level", 1);
         this.registry.set("score", 0);
         this.registry.set("lives", 3);
         this.registry.set("timeLeft", 34);
