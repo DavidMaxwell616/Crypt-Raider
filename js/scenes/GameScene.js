@@ -57,7 +57,7 @@ export class GameScene extends Phaser.Scene {
       pickup: this.sound.add("sfx_pickup", { volume: 0.5 }),
       tick: this.sound.add("sfx_tick", { volume: 0.3 }),
       theme: this.sound.add("sfx_theme", { volume: 0.3, loop: true }),
-      walk: this.sound.add("sfx_walk", { volume: 0.3 }),
+      walk: this.sound.add("sfx_walk", { volume: 0.3, loop: true }),
       walk_sand: this.sound.add("sfx_walk_sand", { volume: 0.3 }),
     }
 
@@ -218,7 +218,9 @@ export class GameScene extends Phaser.Scene {
 
     this.player.setVelocity(0, 0);
     this.player.visible = false;
-
+    if (this.sfx.walk?.isPlaying) {
+      this.sfx.walk.stop();
+    }
     this.playerDied.setPosition(this.player.x, this.player.y);
     this.playerDied.visible = true;
     this.sfx.death.play();
@@ -377,7 +379,7 @@ export class GameScene extends Phaser.Scene {
   }
   clearLevel() {
     this.capsuleCount = 0;
-
+    this.sfx.walk?.stop();
     if (this.playerLevelIntro) {
       this.playerLevelIntro.visible = true;
       this.playerLevelIntro.play("player_level_intro", true);
@@ -698,31 +700,45 @@ export class GameScene extends Phaser.Scene {
     let vx = 0;
     let vy = 0;
 
-    if (this.keys.left.isDown) {
+    const movingLeft = this.keys.left.isDown;
+    const movingRight = this.keys.right.isDown;
+    const movingUp = this.keys.up.isDown;
+    const movingDown = this.keys.down.isDown;
+
+    if (movingLeft) {
       vx = -speed;
-      this.sfx.walk.play();
       this.player.setFlipX(true);
       this.player.play("walk", true);
-
-    } else if (this.keys.right.isDown) {
+    } else if (movingRight) {
       vx = speed;
-      this.sfx.walk.play();
       this.player.setFlipX(false);
       this.player.play("walk", true);
-    } else if (this.keys.up.isDown) {
+    } else if (movingUp) {
       vy = -speed;
-      this.sfx.walk.play();
       this.player.play("walk_up", true);
-    } else if (this.keys.down.isDown) {
+    } else if (movingDown) {
       vy = speed;
-      this.sfx.walk.play();
       this.player.play("walk_down", true);
     } else {
       this.player.play("idle", true);
     }
 
     this.player.setVelocity(vx, vy);
+
+    const isMoving = movingLeft || movingRight || movingUp || movingDown;
+
+    // 🔊 handle walk sound
+    if (isMoving) {
+      if (!this.sfx.walk.isPlaying) {
+        this.sfx.walk.play();
+      }
+    } else {
+      if (this.sfx.walk.isPlaying) {
+        this.sfx.walk.stop();
+      }
+    }
   }
+
 
   handleMummies() {
     this.mummies?.getChildren().forEach((mummy) => {
