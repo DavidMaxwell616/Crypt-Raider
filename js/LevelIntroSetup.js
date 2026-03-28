@@ -4,6 +4,7 @@ import {
     LEVEL_CODES,
     GAME_WIDTH,
     GAME_HEIGHT,
+    GAME_STATE,
 } from "./config.js";
 
 export function setUpLevelIntro(scene) {

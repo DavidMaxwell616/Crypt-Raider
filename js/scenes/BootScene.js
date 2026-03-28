@@ -20,10 +20,9 @@ export class BootScene extends Phaser.Scene {
         this.load.image("start button", "assets/images/start button.png");
         this.load.image("level complete", "assets/images/level complete.png");
         this.load.image("portal", "assets/images/portal.png");
-        this.load.image("rock", "assets/images/rock.png", {
-            frameWidth: 32,
-            frameHeight: 32
-        });
+        this.load.image("rock", "assets/images/rock.png");
+        this.load.image("key", "assets/images/key.png");
+
         this.load.image("locust", "assets/images/locust.png", {
             frameWidth: 32,
             frameHeight: 32
@@ -70,10 +69,6 @@ export class BootScene extends Phaser.Scene {
             frameWidth: 87,
             frameHeight: 95
         });
-        this.load.spritesheet("key", "assets/spritesheets/key.png", {
-            frameWidth: 30,
-            frameHeight: 27
-        });
 
         this.load.path = "../assets/json/";
         this.load.json("levelData", "level_data.json");
@@ -81,6 +76,7 @@ export class BootScene extends Phaser.Scene {
         this.load.path = "../assets/sfx/";
         this.load.audio("sfx_explosion", "explosion.mp3");
         this.load.audio("sfx_player_died", "player_died.mp3");
+        this.load.audio("sfx_key_pickup", "keysound.mp3");
         this.load.audio("sfx_pickup", "pickup.mp3");
         this.load.audio("sfx_capsule_drop", "capsule_drop.mp3");
         this.load.audio("sfx_level_won", "level_won.mp3");
@@ -91,12 +87,6 @@ export class BootScene extends Phaser.Scene {
     }
 
     create() {
-
-        this.registry.set("gameState", GAME_STATE.INTRO);
-        this.registry.set("score", 0);
-        this.registry.set("lives", 3);
-        this.registry.set("timeLeft", 34);
-        this.registry.set("portalOpen", false);
 
         this.scene.start("GameScene");
     }

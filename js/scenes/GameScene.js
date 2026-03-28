@@ -4,6 +4,7 @@ import {
   GAME_STATE,
   SPRITE_SCALE,
   BLOCK_TYPES,
+  GameSettings,
 } from "../config.js";
 import { createAnimations } from "../AnimationFactory.js";
 import { setUpIntro } from "../IntroSetup.js";
@@ -14,17 +15,16 @@ export class GameScene extends Phaser.Scene {
   constructor() {
     super("GameScene");
 
-    this.gameState = GAME_STATE.INTRO;
-    this.level = 1;
-    this.score = 0;
-    this.lives = 3;
+    this.gameState = GameSettings.gameState;
+    this.level = GameSettings.level;
+    this.score = GameSettings.score;
+    this.lives = GameSettings.lives;
     this.capsuleCount = 0;
     this.portalOpen = false;
     this.timerEvent = null;
     this.objectData = null;
     this.levelData = null;
-    this.startTimeLeft = 34;
-    this.timeLeft = 34;
+    this.timeLeft = this.startTimeLeft = GameSettings.startTimeleft;
     this.glow1Scale = 2.5;
     this.glow2Scale = 2.5;
     this.glow1Grow = 0.05;
@@ -53,6 +53,7 @@ export class GameScene extends Phaser.Scene {
       capsule_drop: this.sound.add("sfx_capsule_drop", { volume: 0.7 }),
       explosion: this.sound.add("sfx_explosion", { volume: 0.6 }),
       death: this.sound.add("sfx_player_died", { volume: 0.7 }),
+      key_pickup: this.sound.add("sfx_key_pickup", { volume: 0.7 }),
       level_won: this.sound.add("sfx_level_won", { volume: 0.6 }),
       pickup: this.sound.add("sfx_pickup", { volume: 0.5 }),
       tick: this.sound.add("sfx_tick", { volume: 0.3 }),
@@ -68,7 +69,6 @@ export class GameScene extends Phaser.Scene {
       right: Phaser.Input.Keyboard.KeyCodes.RIGHT,
       space: Phaser.Input.Keyboard.KeyCodes.SPACE
     });
-
     this.startLevel();
   }
 
@@ -142,7 +142,7 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.locusts, this.blocks, this.handleLocustVsBlock, null, this);
 
     this.physics.add.collider(this.player, this.portal, this.handlePlayerVsPortal, null, this);
-    this.physics.add.overlap(this.player, this.keySprite, this.handlePlayerVsKey, null, this);
+    this.physics.add.overlap(this.player, this.key, this.handlePlayerVsKey, null, this);
     this.physics.add.overlap(this.portal, this.capsules, this.handleCapsuleVsPortal, null, this);
     this.physics.add.overlap(this.rocks, this.locusts, this.handleRockVsLocust, null, this);
     this.physics.add.overlap(this.player, this.locusts, this.handlePlayerVsLocust, null, this);
@@ -161,8 +161,7 @@ export class GameScene extends Phaser.Scene {
     if (!explosive?.body || !block?.active) return;
 
     const impactVelocity = explosive.prevVY ?? 0;
-    const frameName = block?.frame?.name;
-    if (impactVelocity > 120 && BLOCK_TYPES[frameName] !== "block") {
+    if (impactVelocity > 120) {
       this.explodeBodies(explosive, block);
     }
   }
@@ -189,8 +188,7 @@ export class GameScene extends Phaser.Scene {
   handlePlayerVsKey(player, key) {
     if (!key.active) return;
     key.visible = false;
-    key.destroy();
-    this.sfx.pickup.play();
+    this.sfx.key_pickup.play();
     if (this.door) {
       this.door.play("door", true);
     }
@@ -230,24 +228,20 @@ export class GameScene extends Phaser.Scene {
     this.playerDied.on("animationcomplete", () => {
       this.playerDying = false;
       this.playerDied.visible = false;
+
+
       if (this.lives <= 0) {
-        this.level = 3;
-        this.score = 0;
-        this.startTimeLeft = 34;
-        this.timeLeft = 34;
-        this.gameState = GAME_STATE.INTRO;
-
-        this.cleanupLevelObjects();
-
-        if (this.backgroundImage) this.backgroundImage.visible = false;
-        if (this.levelText) this.levelText.visible = false;
-        if (this.scoreText) this.scoreText.visible = false;
-        if (this.livesText) this.livesText.visible = false;
-        if (this.timeLeftText) this.timeLeftText.visible = false;
-
-        this.startLevel();
+        this.resetToTitle();
         return;
       }
+
+      this.cleanupLevelObjects();
+
+      if (this.backgroundImage) this.backgroundImage.visible = false;
+      if (this.levelText) this.levelText.visible = false;
+      if (this.scoreText) this.scoreText.visible = false;
+      if (this.livesText) this.livesText.visible = false;
+      if (this.timeLeftText) this.timeLeftText.visible = false;
 
       this.gameState = GAME_STATE.LEVEL;
       this.startLevel();
@@ -259,6 +253,7 @@ export class GameScene extends Phaser.Scene {
 
     capsule.disableBody(true, true);
     this.capsuleCount--;
+    this.sfx.capsule_drop.play();
 
     if (this.capsuleCount <= 0) {
       this.capsuleCount = 0;
@@ -291,92 +286,152 @@ export class GameScene extends Phaser.Scene {
     this.explosion.play("explosion", true);
   }
 
-  explodeBodies(obj1, obj2) {
-    this.explosion.setPosition(obj1.x, obj1.y);
+  explodeBodies(obj1, obj2 = null) {
+    if (!obj1 || !obj1.active) return;
 
-    if (obj1?.active) {
+    const expX = obj1.x;
+    const expY = obj1.y;
+
+    if (obj1.active) {
       obj1.visible = false;
       obj1.destroy();
     }
 
-    if (obj2?.active) {
-      obj2.visible = false;
-      obj2.destroy();
+    if (obj2 && obj2.active) {
+      const frameName = BLOCK_TYPES[obj2.frame?.name];
+      if (frameName !== "block") {
+        obj2.visible = false;
+        obj2.destroy();
+      }
     }
 
-    this.explosion.visible = true;
-    this.showExplosion();
-    this.explosion.play("explosion", true);
+    this.showExplosion(expX, expY);
   }
+  resetToTitle() {
+    if (this.timerEvent) {
+      this.timerEvent.remove(false);
+      this.timerEvent = null;
+    }
 
-  showExplosion() {
-    const exp = this.explosion;
+    if (this.sfx?.walk?.isPlaying) this.sfx.walk.stop();
+    if (this.sfx?.theme?.isPlaying) this.sfx.theme.stop();
+
+    this.playerDying = false;
+    this.capsuleCount = 0;
+    this.portalOpen = false;
+
+
+    this.gameState = GameSettings.gameState;
+    this.level = GameSettings.level;
+    this.score = GameSettings.score;
+    this.lives = GameSettings.lives;
+    this.timeLeft = this.startTimeLeft = GameSettings.startTimeleft;
+
+    this.cleanupLevelObjects();
+
+    this.levelBuilt = false;
+    this.levelIntroBuilt = false;
+
+    if (this.backgroundImage) this.backgroundImage.visible = false;
+    if (this.levelText) this.levelText.visible = false;
+    if (this.scoreText) this.scoreText.visible = false;
+    if (this.scoreText2) this.scoreText2.visible = false;
+    if (this.livesText) this.livesText.visible = false;
+    if (this.timeLeftText) this.timeLeftText.visible = false;
+    if (this.timeLeftText2) this.timeLeftText2.visible = false;
+    if (this.levelComplete) this.levelComplete.visible = false;
+    if (this.playerLevelWon) this.playerLevelWon.visible = false;
+    if (this.playerLevelIntro) this.playerLevelIntro.visible = false;
+    if (this.portal) this.portal.visible = false;
+    if (this.portalOpenSprite) this.portalOpenSprite.visible = false;
+    if (this.key) this.key.visible = false;
+    if (this.door) this.door.visible = false;
+    if (this.explosion) this.explosion.visible = false;
+
+    this.startLevel();
+  }
+  showExplosion(x, y) {
     this.sfx.explosion.play();
+
+    this.explosion.setPosition(x, y);
+    this.explosion.visible = true;
+    this.explosion.play("explosion", true);
+    this.explosion.on("animationcomplete", () => {
+      this.explosion.visible = false;
+    });
+
+    const hitExplosives = [];
 
     if (
       this.player &&
       this.player.active &&
       this.player.visible &&
-      this.player.x > exp.x - exp.width &&
-      this.player.x < exp.x + exp.width &&
-      this.player.y > exp.y - exp.height &&
-      this.player.y < exp.y + exp.height
+      this.isColliding(this.player, this.explosion)
     ) {
       this.killPlayer();
     }
 
-    // destroy nearby breakable blocks
+    this.capsules.getChildren().forEach((capsule) => {
+      if (capsule.active && this.isColliding(capsule, this.explosion)) {
+        capsule.destroy();
+      }
+    });
+
     this.blocks.getChildren().forEach((block) => {
-      if (
-        parseInt(block.frame.name, 10) < 6 &&
-        block.x > exp.x - exp.width &&
-        block.x < exp.x + exp.width &&
-        block.y > exp.y - exp.height &&
-        block.y < exp.y + exp.height
-      ) {
+      if (!block || !block.active || !block.frame) return;
+
+      const frameName = BLOCK_TYPES[block.frame.name];
+      if (frameName !== "block" && this.isColliding(block, this.explosion)) {
         block.destroy();
       }
     });
 
-    // trigger nearby explosives (chain reaction)
-    const hitExplosives = [];
+    this.rocks.getChildren().forEach((rock) => {
+      if (rock.active && this.isColliding(rock, this.explosion)) {
+        rock.destroy();
+      }
+    });
 
     this.explosives.getChildren().forEach((explosive) => {
-      if (
-        explosive.active &&
-        explosive.x > exp.x - exp.width &&
-        explosive.x < exp.x + exp.width &&
-        explosive.y > exp.y - exp.height &&
-        explosive.y < exp.y + exp.height
-      ) {
+      if (!explosive || !explosive.active) return;
+
+      if (this.isColliding(explosive, this.explosion)) {
         hitExplosives.push(explosive);
       }
     });
 
     hitExplosives.forEach((explosive) => {
+      explosive.disableBody(true, true);
+
       this.time.delayedCall(60, () => {
-        if (!explosive.active) return;
-        this.explodeBodies(explosive, null);
+        if (!explosive.scene) return;
+        this.showExplosion(explosive.x, explosive.y);
+        explosive.destroy();
       });
     });
-    // destroy nearby rocks
-    this.rocks.getChildren().forEach((rock) => {
-      if (
-        rock.active &&
-        rock.x > exp.x - exp.width &&
-        rock.x < exp.x + exp.width &&
-        rock.y > exp.y - exp.height &&
-        rock.y < exp.y + exp.height
-      ) {
-        this.explosion.setPosition(rock.x, rock.y);
-
-        rock.destroy();
-
-        this.explosion.visible = true;
-        this.explosion.play("explosion", true);
-      }
-    });
   }
+
+  isColliding(a, b) {
+    if (!a || !b || !a.active || !b.active) return false;
+
+    const aw = a.displayWidth ?? a.width ?? 0;
+    const ah = a.displayHeight ?? a.height ?? 0;
+    const bw = b.displayWidth ?? b.width ?? 0;
+    const bh = b.displayHeight ?? b.height ?? 0;
+
+    const aLeft = a.x - aw * 0.5;
+    const aTop = a.y - ah * 0.5;
+    const bLeft = b.x - bw * 0.5;
+    const bTop = b.y - bh * 0.5;
+
+    return (
+      aLeft < bLeft + bw &&
+      aLeft + aw > bLeft &&
+      aTop < bTop + bh &&
+      aTop + ah > bTop
+    );
+  }
+
   clearLevel() {
     this.capsuleCount = 0;
     this.sfx.walk?.stop();
@@ -461,7 +516,6 @@ export class GameScene extends Phaser.Scene {
 
   openPortal() {
     this.portalOpen = true;
-    this.sfx.capsule_drop.play();
     if (this.portalOpenSprite) {
       this.portalOpenSprite.visible = true;
     }
@@ -489,6 +543,11 @@ export class GameScene extends Phaser.Scene {
         if (this.levelComplete) this.levelComplete.visible = false;
         if (this.scoreText2) this.scoreText2.visible = false;
         if (this.timeLeftText2) this.timeLeftText2.visible = false;
+        if (this.level >= 10) {
+          this.resetToTitle();
+          return;
+        }
+
         this.level++;
         this.startTimeLeft += 10;
         this.timeLeft = this.startTimeLeft;
@@ -533,10 +592,12 @@ export class GameScene extends Phaser.Scene {
 
     this.portalOpenSprite.setPosition(portalX, portalY);
 
-    const keyX = this.levelData.key_position.x * BLOCK_SIZE - SPRITE_SIZE;
-    const keyY = this.levelData.key_position.y * BLOCK_SIZE - SPRITE_SIZE;
-    this.keySprite.setPosition(keyX, keyY).setVisible(true);
-
+    if (this.levelData.key_position.x !== 0 && this.levelData.key_position.y !== 0) {
+      const keyX = this.levelData.key_position.x * BLOCK_SIZE - SPRITE_SIZE;
+      const keyY = this.levelData.key_position.y * BLOCK_SIZE - SPRITE_SIZE;
+      this.key.setPosition(keyX, keyY);
+      this.key.visible = true;
+    }
 
     this.levelData.rock_position.forEach((rock) => {
       if (rock.x !== 0 && rock.y !== 0) {
@@ -603,17 +664,14 @@ export class GameScene extends Phaser.Scene {
     if (this.levelData.door_position.x !== 0 && this.levelData.door_position.y !== 0) {
       const x = this.levelData.door_position.x * BLOCK_SIZE - SPRITE_SIZE;
       const y = this.levelData.door_position.y * BLOCK_SIZE - SPRITE_SIZE;
-
-      this.door = this.physics.add.staticSprite(x, y, "door")
-        .setScale(SPRITE_SCALE)
-        .setOrigin(0.5);
-
-      this.door.refreshBody();
-
+      this.door.setVisible(true)
+        .setPosition(x, y)
+        .setFrame(0);
+      this.door.body.enable = true;
       this.door.off("animationcomplete");
       this.door.on("animationcomplete", () => {
-        this.door.destroy();
-        this.door = null;
+        this.door.visible = false;
+        this.door.body.enable = false;
       });
     }
 
@@ -662,7 +720,7 @@ export class GameScene extends Phaser.Scene {
       "player",
       "portal",
       "portalOpenSprite",
-      "keySprite",
+      "key",
       "explosion",
       "door",
       "playerLevelWon",
@@ -745,9 +803,9 @@ export class GameScene extends Phaser.Scene {
       if (!mummy.body || !this.player) return;
 
       if (this.player.x < mummy.x) {
-        mummy.speedX = -30;
+        mummy.speedX = -60;
       } else if (this.player.x > mummy.x) {
-        mummy.speedX = 30;
+        mummy.speedX = 60;
       } else {
         mummy.speedX = 0;
       }

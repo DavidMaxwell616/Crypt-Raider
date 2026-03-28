@@ -33,16 +33,24 @@ export function setUpLevel(scene) {
   scene.portalOpenSprite.visible = false;
   scene.portalOpenSprite.play("portal open", true);
 
-  scene.keySprite = scene.physics.add.sprite(0, 0, "key")
+  scene.key = scene.physics.add.sprite(0, 0, "key")
     .setScale(1.72)
     .setOrigin(0.5)
     .setImmovable(true);
+  scene.key.visible = false;
 
-  scene.keySprite.body.setAllowGravity(false);
-  scene.keySprite.visible = false;
-  scene.keySprite.label = "key";
-  // reset timer
-  scene.timeLeft = 34;
+  scene.key.body.setAllowGravity(false);
+  scene.key.label = "key";
+
+  scene.door = scene.physics.add.sprite(0, 0, "door")
+    .setScale(SPRITE_SCALE)
+    .setOrigin(0.5)
+    .setImmovable(true);
+  scene.door.visible = false;
+
+  scene.door.body.setAllowGravity(false);
+  scene.door.label = "door";
+
   scene.createTimer();
   scene.explosion = scene.add.sprite(0, 0, "explosion")
     .setScale(1.72)

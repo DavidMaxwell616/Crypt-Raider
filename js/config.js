@@ -6,6 +6,14 @@ export const GAME_STATE = {
     GAME_OVER: 4
 };
 
+export const GameSettings = {
+    gameState: GAME_STATE.INTRO,
+    level: 1,
+    score: 0,
+    lives: 3,
+    startTimeleft: 34,
+};
+
 export const YELLOW = "#FFDF00"
 export const BLOCK_SIZE = 50;
 export const SPRITE_SIZE = 25;
