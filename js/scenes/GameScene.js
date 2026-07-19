@@ -235,14 +235,7 @@ export class GameScene extends Phaser.Scene {
         return;
       }
 
-      this.cleanupLevelObjects();
-
-      if (this.backgroundImage) this.backgroundImage.visible = false;
-      if (this.levelText) this.levelText.visible = false;
-      if (this.scoreText) this.scoreText.visible = false;
-      if (this.livesText) this.livesText.visible = false;
-      if (this.timeLeftText) this.timeLeftText.visible = false;
-
+      this.timeLeft = this.startTimeLeft;
       this.gameState = GAME_STATE.LEVEL;
       this.startLevel();
     });
@@ -277,13 +270,13 @@ export class GameScene extends Phaser.Scene {
   handleRockVsLocust(rock, locust) {
     if (!rock.active || !locust.active) return;
 
-    this.explosion.setPosition(rock.x, rock.y);
+    const explosionX = rock.x;
+    const explosionY = rock.y;
+
     rock.destroy();
     locust.destroy();
 
-    this.explosion.visible = true;
-    this.showExplosion();
-    this.explosion.play("explosion", true);
+    this.showExplosion(explosionX, explosionY);
   }
 
   explodeBodies(obj1, obj2 = null) {
@@ -724,6 +717,7 @@ export class GameScene extends Phaser.Scene {
       "explosion",
       "door",
       "playerLevelWon",
+      "playerDied",
       "playerLevelIntro"
     ];
 

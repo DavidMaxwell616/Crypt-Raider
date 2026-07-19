@@ -77,6 +77,13 @@ export function setUpLevel(scene) {
 
   scene.timeLeftText2.visible = false;
   scene.scoreText2.visible = false;
+  scene.backgroundImage.visible = true;
+  scene.levelText.visible = true;
+  scene.scoreText.visible = true;
+  scene.livesText.visible = true;
+  scene.timeLeftText.visible = true;
+  scene.updateStats();
+
   scene.playerLevelWon.off("animationcomplete");
   scene.playerLevelWon.on("animationcomplete", (animation) => {
     if (animation.key === "player_won") {
